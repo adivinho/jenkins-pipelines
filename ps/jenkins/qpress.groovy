@@ -42,7 +42,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 export ARCH=\$(arch)
-                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
+                docker run -u root -v \${build_dir}:\${build_dir} \${DOCKER_OS} sh -x -c "
                     RHEL=$(rpm --eval %rhel)
                     ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
 
@@ -76,7 +76,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     cp -av \${build_dir}/qpress-packaging/rpm/SPECS/* \${build_dir}/rpmbuild/SPECS
                     cp -av \${build_dir}/qpress-packaging/qpress-11-source.zip \${build_dir}/rpmbuild/SOURCES
 
-                    rpmbuild -ba --define \\"debug_package %{nil}\\" rpmbuild/SPECS/qpress.spec --define \\"_topdir $PWD/rpmbuild\\"
+                    rpmbuild -ba --define \\"debug_package %{nil}\\" rpmbuild/SPECS/qpress.spec --define \\"_topdir \$PWD/rpmbuild\\"
 
                     mkdir -p srpm
                     cp rpmbuild/SRPMS/*.rpm srpm
@@ -94,7 +94,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 export ARCH=\$(arch)
-                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
+                docker run -u root -v \${build_dir}:\${build_dir} \${DOCKER_OS} sh -x -c "
                     export DEBIAN_VERSION=\\"$(lsb_release -sc)\\"
                     cd \${build_dir}
                     until DEBIAN_FRONTEND=noninteractive apt ${APT_OPTS} update; do
@@ -107,18 +107,18 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     done
                     DEBIAN_FRONTEND=noninteractive apt-get -y purge eatmydata || true
                     PKGLIST=\\"bzr curl bison cmake perl libssl-dev gcc g++ libaio-dev libldap2-dev libwrap0-dev gdb unzip gawk\\"
-	            PKGLIST=\\"${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
-                    PKGLIST=\\"${PKGLIST} libldap2-dev libnuma-dev libjemalloc-dev libc6-dbg valgrind libjson-perl\\"
-                    PKGLIST=\\"${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip\\"
-                    PKGLIST=\\"${PKGLIST} build-essential debhelper devscripts lintian diffutils patch patchutils\\"
-                    if [ $DEBIAN_VERSION = focal -o  $DEBIAN_VERSION = bullseye -o  $DEBIAN_VERSION = jammy -o  $DEBIAN_VERSION = bookworm -o  $DEBIAN_VERSION = noble ]; then
-                        PKGLIST=\\"${PKGLIST} python3-mysqldb\\"
+	            PKGLIST=\\"\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
+                    PKGLIST=\\"\${PKGLIST} libldap2-dev libnuma-dev libjemalloc-dev libc6-dbg valgrind libjson-perl\\"
+                    PKGLIST=\\"\${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip\\"
+                    PKGLIST=\\"\${PKGLIST} build-essential debhelper devscripts lintian diffutils patch patchutils\\"
+                    if [ \$DEBIAN_VERSION = focal -o  \$DEBIAN_VERSION = bullseye -o  \$DEBIAN_VERSION = jammy -o  \$DEBIAN_VERSION = bookworm -o  \$DEBIAN_VERSION = noble ]; then
+                        PKGLIST=\\"\${PKGLIST} python3-mysqldb\\"
                     else
-                        PKGLIST=\\"${PKGLIST} python-mysqldb\\"
+                        PKGLIST=\\"\${PKGLIST} python-mysqldb\\"
                     fi
-                    DEBIAN_FRONTEND=noninteractive apt-get -y install ${PKGLIST}
+                    DEBIAN_FRONTEND=noninteractive apt-get -y install \${PKGLIST}
 
-                    wget \\"${QPRESS_SOURCE}\\"
+                    wget \\"\${QPRESS_SOURCE}\\"
                     tar -xvzf 20220819.tar.gz
                     cd qpress-20220819
                     zip -q qpress-11-source.zip *
