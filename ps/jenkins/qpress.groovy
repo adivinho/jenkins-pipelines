@@ -41,8 +41,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 cp ../source_tarball/qpress-packaging.tar.gz .
                 ls -la
                 export build_dir=\$(pwd -P)
-                export ARCH=\$(arch)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
+                    ARCH=\$(arch)
                     RHEL=\$(rpm --eval %rhel)
 
                     yum -y install wget gcc gcc-c++ rpm-build make git
@@ -77,7 +77,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     cp rpmbuild/SRPMS/*.rpm srpm
 
                     mkdir -p rpm
-                    cp rpmbuild/RPMS/noarch/*.rpm rpm/
+                    cp rpmbuild/RPMS/\$ARCH/*.rpm rpm/
                 "
              """
              break
@@ -88,8 +88,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 cp ../source_tarball/qpress-packaging.tar.gz .
                 ls -la
                 export build_dir=\$(pwd -P)
-                export ARCH=\$(arch)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
+                    ARCH=\$(arch)
                     cd \${build_dir}
                     until DEBIAN_FRONTEND=noninteractive apt update; do
                         echo \\"waiting\\"
@@ -99,7 +99,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                         echo \\"waiting\\"
                         sleep 10
                     done
-                    export DEBIAN_VERSION=\$(lsb_release -sc)
+                    DEBIAN_VERSION=\$(lsb_release -sc)
                     DEBIAN_FRONTEND=noninteractive apt-get -y purge eatmydata || true
                     PKGLIST=\\"bzr curl bison cmake perl libssl-dev gcc g++ libaio-dev libldap2-dev libwrap0-dev gdb unzip gawk\\"
 	            PKGLIST=\\"\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
