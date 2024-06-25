@@ -42,11 +42,11 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 export ARCH=\$(arch)
-                docker run -u root -v \${build_dir}:\${build_dir} \${DOCKER_OS} sh -x -c "
-                    RHEL=$(rpm --eval %rhel)
-                    ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
+                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
+                    RHEL=\$(rpm --eval %rhel)
+                    ARCH=\$(echo $(uname -m) | sed -e 's:i686:i386:g')
 
-                    if [ $RHEL = 8 ]; then
+                    if [ \$RHEL = 8 ]; then
                         sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                         sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                     fi
