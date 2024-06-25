@@ -42,8 +42,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
-                    ARCH=\$(arch)
-                    RHEL=\$(rpm --eval %rhel)
+                    export ARCH=\$(arch)
+                    export RHEL=\$(rpm --eval %rhel)
 
                     yum -y install wget gcc gcc-c++ rpm-build make git
 
@@ -65,7 +65,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     rm -rf deb
 
                     rm -fr \${build_dir}/rpmbuild
-                    mkdir -p \${build_dir}/rpmbuild/{RPMS/noarch,SOURCES,SRPMS,SPECS,BUILD}
+                    mkdir -p \${build_dir}/rpmbuild/{RPMS/\${ARCH},SOURCES,SRPMS,SPECS,BUILD}
                     cp -av \${build_dir}/qpress-packaging/rpm/SOURCES/* \${build_dir}/rpmbuild/SOURCES
                     cp -av \${build_dir}/qpress-packaging/rpm/SPECS/* \${build_dir}/rpmbuild/SPECS
                     cp -av \${build_dir}/qpress-packaging/qpress-11-source.zip \${build_dir}/rpmbuild/SOURCES
@@ -77,7 +77,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     cp rpmbuild/SRPMS/*.rpm srpm
 
                     mkdir -p rpm
-                    cp rpmbuild/RPMS/\$ARCH/*.rpm rpm/
+                    cp rpmbuild/RPMS/\${ARCH}/*.rpm rpm/
                 "
              """
              break
