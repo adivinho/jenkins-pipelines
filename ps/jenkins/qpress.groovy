@@ -93,7 +93,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 export ARCH=\$(arch)
-                docker run -u root -v \${build_dir}:\${build_dir} \${DOCKER_OS} sh -x -c "
+                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
                     export DEBIAN_VERSION=\\"$(lsb_release -sc)\\"
                     cd \${build_dir}
                     until DEBIAN_FRONTEND=noninteractive apt ${APT_OPTS} update; do
