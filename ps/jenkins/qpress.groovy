@@ -27,7 +27,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     cat \${build_dir}/qpress-packaging/rpm/SPECS/qpress.spec
                     cd ..
                     tar --owner=0 --group=0 -czf qpress-packaging.tar.gz qpress-packaging
-                    echo \"UPLOAD=UPLOAD/experimental/BUILDS/percona-release/${BUILD_BRANCH}/${BUILD_ID}\" >> qpress.properties
+                    echo \"UPLOAD=UPLOAD/experimental/BUILDS/qpress/${BUILD_BRANCH}/${BUILD_ID}\" >> qpress.properties
 
                     mkdir -p source_tarball
                     cp qpress-packaging.tar.gz source_tarball
@@ -44,11 +44,6 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 export ARCH=\$(arch)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
                     RHEL=\$(rpm --eval %rhel)
-
-                    if [ \$RHEL = 8 ]; then
-                        sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-                        sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-                    fi
 
                     yum -y install wget gcc gcc-c++ rpm-build make git
 
@@ -74,6 +69,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     cp -av \${build_dir}/qpress-packaging/rpm/SOURCES/* \${build_dir}/rpmbuild/SOURCES
                     cp -av \${build_dir}/qpress-packaging/rpm/SPECS/* \${build_dir}/rpmbuild/SPECS
                     cp -av \${build_dir}/qpress-packaging/qpress-11-source.zip \${build_dir}/rpmbuild/SOURCES
+                    cd ..
 
                     rpmbuild -ba --define \\"debug_package %{nil}\\" rpmbuild/SPECS/qpress.spec --define \\"_topdir \$PWD/rpmbuild\\"
 
@@ -103,7 +99,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                         echo \\"waiting\\"
                         sleep 10
                     done
-                    export DEBIAN_VERSION=\\"\$(lsb_release -sc)\\"
+                    export DEBIAN_VERSION=\$(lsb_release -sc)
                     DEBIAN_FRONTEND=noninteractive apt-get -y purge eatmydata || true
                     PKGLIST=\\"bzr curl bison cmake perl libssl-dev gcc g++ libaio-dev libldap2-dev libwrap0-dev gdb unzip gawk\\"
 	            PKGLIST=\\"\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
