@@ -30,7 +30,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     echo \"UPLOAD=UPLOAD/experimental/BUILDS/percona-release/${BUILD_BRANCH}/${BUILD_ID}\" >> qpress.properties
 
                     mkdir -p source_tarball
-                    cp qpress.tar.gz source_tarball
+                    cp qpress-packaging.tar.gz source_tarball
                 "
             """
             break
