@@ -12,7 +12,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
             sh """
                 cd test
                 export build_dir=\$(pwd -P)
-                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} 3 sh -x -c "
+                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
                     yum -y install git
                     cd \${build_dir}
                     ls -la
@@ -42,9 +42,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 export ARCH=\$(arch)
-                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} 1 sh -x -c "
+                docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
                     RHEL=\$(rpm --eval %rhel)
-                    ARCH=\$(echo $(uname -m) | sed -e 's:i686:i386:g')
 
                     if [ \$RHEL = 8 ]; then
                         sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
