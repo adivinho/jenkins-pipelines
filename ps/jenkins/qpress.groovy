@@ -158,7 +158,7 @@ pipeline {
             description: 'Source for qpress',
             name: 'QPRESS_SOURCE')
         string(
-            defaultValue: '1',
+            defaultValue: '11',
             description: 'Version value',
             name: 'VERSION')
         string(
