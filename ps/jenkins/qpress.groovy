@@ -102,16 +102,16 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     export DEBIAN_VERSION=\\\$(lsb_release -sc)
                     DEBIAN_FRONTEND=noninteractive apt-get -y purge eatmydata || true
                     PKGLIST=\\"bzr curl bison cmake perl libssl-dev gcc g++ libaio-dev libldap2-dev libwrap0-dev gdb unzip gawk\\"
-	            PKGLIST=\\"\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
-                    PKGLIST=\\"\${PKGLIST} libldap2-dev libnuma-dev libjemalloc-dev libc6-dbg valgrind libjson-perl\\"
-                    PKGLIST=\\"\${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip wget\\"
-                    PKGLIST=\\"\${PKGLIST} build-essential debhelper devscripts lintian diffutils patch patchutils\\"
-                    if [ \$DEBIAN_VERSION = focal -o  \$DEBIAN_VERSION = bullseye -o  \$DEBIAN_VERSION = jammy -o  \$DEBIAN_VERSION = bookworm -o  \$DEBIAN_VERSION = noble ]; then
-                        PKGLIST=\\"\${PKGLIST} python3-mysqldb\\"
+	            PKGLIST=\\"\\\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
+                    PKGLIST=\\"\\\${PKGLIST} libldap2-dev libnuma-dev libjemalloc-dev libc6-dbg valgrind libjson-perl\\"
+                    PKGLIST=\\"\\\${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip wget\\"
+                    PKGLIST=\\"\\\${PKGLIST} build-essential debhelper devscripts lintian diffutils patch patchutils\\"
+                    if [ \\\$DEBIAN_VERSION = focal -o  \\\$DEBIAN_VERSION = bullseye -o \\\$DEBIAN_VERSION = jammy -o  \\\$DEBIAN_VERSION = bookworm -o  \\\$DEBIAN_VERSION = noble ]; then
+                        PKGLIST=\\"\\\${PKGLIST} python3-mysqldb\\"
                     else
-                        PKGLIST=\\"\${PKGLIST} python-mysqldb\\"
+                        PKGLIST=\\"\\\${PKGLIST} python-mysqldb\\"
                     fi
-                    DEBIAN_FRONTEND=noninteractive apt-get -y install \${PKGLIST}
+                    DEBIAN_FRONTEND=noninteractive apt-get -y install \\\${PKGLIST}
 
                     wget \\"\${QPRESS_SOURCE}\\"
                     tar -xvzf 20220819.tar.gz
@@ -202,6 +202,27 @@ pipeline {
         }
         stage('Build qpress packages') {
             parallel {
+                stage('Centos 7') {
+                    agent {
+                        label 'docker'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        buildStage("centos:7", "RPM")
+                        sh '''
+                            pwd
+                            ls -la test/rpm
+                            cp -r test/srpm .
+                            cp -r test/rpm .
+                        '''
+
+                        pushArtifactFolder("rpm/", AWS_STASH_PATH)
+                        pushArtifactFolder("srpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
+                    }
+                }
                 stage('Oracle Linux 8') {
                     agent {
                         label 'docker'
@@ -231,6 +252,48 @@ pipeline {
                         cleanUpWS()
                         popArtifactFolder("source_tarball/", AWS_STASH_PATH)
                         buildStage("oraclelinux:8", "RPM")
+                        sh '''
+                            pwd
+                            ls -la test/rpm
+                            cp -r test/srpm .
+                            cp -r test/rpm .
+                        '''
+
+                        pushArtifactFolder("rpm/", AWS_STASH_PATH)
+                        pushArtifactFolder("srpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
+                    }
+                }
+                stage('Oracle Linux 9') {
+                    agent {
+                        label 'docker'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        buildStage("oraclelinux:9", "RPM")
+                        sh '''
+                            pwd
+                            ls -la test/rpm
+                            cp -r test/srpm .
+                            cp -r test/rpm .
+                        '''
+
+                        pushArtifactFolder("rpm/", AWS_STASH_PATH)
+                        pushArtifactFolder("srpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
+                    }
+                }
+                stage('Oracle Linux 9 ARM') {
+                    agent {
+                        label 'docker-32gb-aarch64'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        buildStage("oraclelinux:9", "RPM")
                         sh '''
                             pwd
                             ls -la test/rpm
