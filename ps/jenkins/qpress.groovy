@@ -42,8 +42,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
-                    export ARCH=\\$(arch)
-                    export RHEL=\\$(rpm --eval %rhel)
+                    export ARCH=\\\$(arch)
+                    export RHEL=\\\$(rpm --eval %rhel)
 
                     yum -y install wget gcc gcc-c++ rpm-build make git
 
