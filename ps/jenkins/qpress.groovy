@@ -122,7 +122,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                     unzip ./qpress-11-source.zip
                     tar xvf qpress-packaging.tar.gz
                     mv qpress-packaging/deb/debian .
-                    dch -m -D \\"\$(lsb_release -sc)\\" --force-distribution -v \\"11-3.\$(lsb_release -sc)\\" \\"Update qpress distribution\\"
+                    dch -m -D \\"\$(lsb_release -sc)\\" --force-distribution -v \\"\${VERSION}-\${RELEASE}.\\\$(lsb_release -sc)\\" \\"Update qpress distribution\\"
                     dpkg-buildpackage -sa -uc -us -b
                     mkdir -p \${build_dir}/deb
                     cp ../*.deb \${build_dir}/deb/
