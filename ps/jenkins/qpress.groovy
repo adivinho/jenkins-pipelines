@@ -89,7 +89,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                 ls -la
                 export build_dir=\$(pwd -P)
                 docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -x -c "
-                    ARCH=\\\$(arch)
+                    export ARCH=\\\$(arch)
                     cd \${build_dir}
                     until DEBIAN_FRONTEND=noninteractive apt update; do
                         echo \\"waiting\\"
@@ -99,12 +99,12 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
                         echo \\"waiting\\"
                         sleep 10
                     done
-                    DEBIAN_VERSION=\\\$(lsb_release -sc)
+                    export DEBIAN_VERSION=\\\$(lsb_release -sc)
                     DEBIAN_FRONTEND=noninteractive apt-get -y purge eatmydata || true
                     PKGLIST=\\"bzr curl bison cmake perl libssl-dev gcc g++ libaio-dev libldap2-dev libwrap0-dev gdb unzip gawk\\"
 	            PKGLIST=\\"\${PKGLIST} libmecab-dev libncurses5-dev libreadline-dev libpam-dev zlib1g-dev libcurl4-openssl-dev\\"
                     PKGLIST=\\"\${PKGLIST} libldap2-dev libnuma-dev libjemalloc-dev libc6-dbg valgrind libjson-perl\\"
-                    PKGLIST=\\"\${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip\\"
+                    PKGLIST=\\"\${PKGLIST} libmecab2 mecab mecab-ipadic zip unzip wget\\"
                     PKGLIST=\\"\${PKGLIST} build-essential debhelper devscripts lintian diffutils patch patchutils\\"
                     if [ \$DEBIAN_VERSION = focal -o  \$DEBIAN_VERSION = bullseye -o  \$DEBIAN_VERSION = jammy -o  \$DEBIAN_VERSION = bookworm -o  \$DEBIAN_VERSION = noble ]; then
                         PKGLIST=\\"\${PKGLIST} python3-mysqldb\\"
@@ -202,7 +202,7 @@ pipeline {
         }
         stage('Build qpress packages') {
             parallel {
-                stage('RPM') {
+                stage('Oracle Linux 8') {
                     agent {
                         label 'docker'
                     }
@@ -223,14 +223,35 @@ pipeline {
                         uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
                     }
                 }
-                stage('DEB') {
+                stage('Oracle Linux 8 ARM') {
+                    agent {
+                        label 'docker-32gb-aarch64'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        buildStage("oraclelinux:8", "RPM")
+                        sh '''
+                            pwd
+                            ls -la test/rpm
+                            cp -r test/srpm .
+                            cp -r test/rpm .
+                        '''
+
+                        pushArtifactFolder("rpm/", AWS_STASH_PATH)
+                        pushArtifactFolder("srpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
+                    }
+                }
+                stage('Ubuntu Focal (20.04)') {
                     agent {
                         label 'docker'
                     }
                     steps {
                         cleanUpWS()
                         popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("ubuntu:bionic", "DEB")
+                        buildStage("ubuntu:focal", "DEB")
                         sh '''
                             pwd
                             ls -la test/deb
