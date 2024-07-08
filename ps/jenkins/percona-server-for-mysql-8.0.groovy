@@ -306,6 +306,7 @@ parameters {
         } // stage
         stage('Build PS RPMs/DEBs/Binary tarballs') {
             parallel {
+/*
                 stage('Centos 7') {
                     agent {
                         label 'min-centos-7-x64'
@@ -506,6 +507,7 @@ parameters {
                         pushArtifactFolder("deb/", AWS_STASH_PATH)
                     }
                 }
+*/
                 stage('Centos 7 binary tarball') {
                     agent {
                         label 'min-centos-7-x64'
@@ -526,6 +528,7 @@ parameters {
                         }
                     }
                 }
+/*
                 stage('Centos 7 debug tarball') {
                     agent {
                         label 'min-centos-7-x64'
@@ -744,6 +747,7 @@ parameters {
                         pushArtifactFolder("tarball/", AWS_STASH_PATH)
                     }
                 }
+*/
             }
         }
         stage('Upload packages and tarballs from S3') {
