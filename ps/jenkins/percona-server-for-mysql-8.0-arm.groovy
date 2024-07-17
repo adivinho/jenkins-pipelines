@@ -28,18 +28,32 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         mkdir -p test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
         export build_dir=\$(pwd -P)
-        docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -c "
+        if [ "$DOCKER_OS" = "none" ]; then
             set -o xtrace
             cd \${build_dir}
             if [ -f ./test/percona-server-8.0.properties ]; then
                 . ./test/percona-server-8.0.properties
             fi
             sudo bash -x ./ps_builder.sh --builddir=\${build_dir}/test --install_deps=1
-            if [ ${BUILD_TOKUDB_TOKUBACKUP} = \"ON\" ]; then
+            if [ ${BUILD_TOKUDB_TOKUBACKUP} = "ON" ]; then
                 bash -x ./ps_builder.sh --builddir=\${build_dir}/test --repo=${GIT_REPO} --branch=${BRANCH} --build_tokudb_tokubackup=1 --perconaft_branch=${PERCONAFT_BRANCH} --tokubackup_branch=${TOKUBACKUP_BRANCH} --rpm_release=${RPM_RELEASE} --deb_release=${DEB_RELEASE} ${STAGE_PARAM}
             else
                 bash -x ./ps_builder.sh --builddir=\${build_dir}/test --repo=${GIT_REPO} --branch=${BRANCH} --perconaft_branch=${PERCONAFT_BRANCH} --tokubackup_branch=${TOKUBACKUP_BRANCH} --rpm_release=${RPM_RELEASE} --deb_release=${DEB_RELEASE} ${STAGE_PARAM}
-           fi"
+            fi
+        else
+            docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -c "
+                set -o xtrace
+                cd \${build_dir}
+                if [ -f ./test/percona-server-8.0.properties ]; then
+                    . ./test/percona-server-8.0.properties
+                fi
+                bash -x ./ps_builder.sh --builddir=\${build_dir}/test --install_deps=1
+                if [ ${BUILD_TOKUDB_TOKUBACKUP} = \"ON\" ]; then
+                    bash -x ./ps_builder.sh --builddir=\${build_dir}/test --repo=${GIT_REPO} --branch=${BRANCH} --build_tokudb_tokubackup=1 --perconaft_branch=${PERCONAFT_BRANCH} --tokubackup_branch=${TOKUBACKUP_BRANCH} --rpm_release=${RPM_RELEASE} --deb_release=${DEB_RELEASE} ${STAGE_PARAM}
+                else
+                    bash -x ./ps_builder.sh --builddir=\${build_dir}/test --repo=${GIT_REPO} --branch=${BRANCH} --perconaft_branch=${PERCONAFT_BRANCH} --tokubackup_branch=${TOKUBACKUP_BRANCH} --rpm_release=${RPM_RELEASE} --deb_release=${DEB_RELEASE} ${STAGE_PARAM}
+                fi"
+        fi
     """
 }
 
