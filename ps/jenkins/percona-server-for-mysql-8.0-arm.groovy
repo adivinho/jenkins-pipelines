@@ -420,7 +420,7 @@ parameters {
                                 echo "The step is skipped"
                             } else {
                                 cleanUpWS()
-                                installCli("deb")
+                                installCli("rpm")
                                 unstash 'properties'
                                 popArtifactFolder("source_deb/", AWS_STASH_PATH)
                                 buildStage("ubuntu:focal", "--build_deb=1 --with_zenfs=1")
@@ -436,7 +436,7 @@ parameters {
                     }
                     steps {
                         cleanUpWS()
-                        installCli("deb")
+                        installCli("rpm")
                         unstash 'properties'
                         popArtifactFolder("source_deb/", AWS_STASH_PATH)
                         script {
@@ -456,7 +456,7 @@ parameters {
                     }
                     steps {
                         cleanUpWS()
-                        installCli("deb")
+                        installCli("rpm")
                         unstash 'properties'
                         popArtifactFolder("source_deb/", AWS_STASH_PATH)
                         script {
@@ -480,7 +480,7 @@ parameters {
                                 echo "The step is skipped"
                             } else {
                                 cleanUpWS()
-                                installCli("deb")
+                                installCli("rpm")
                                 unstash 'properties'
                                 popArtifactFolder("source_deb/", AWS_STASH_PATH)
                                 buildStage("debian:bullseye", "--build_deb=1 --with_zenfs=1")
@@ -496,7 +496,7 @@ parameters {
                     }
                     steps {
                         cleanUpWS()
-                        installCli("deb")
+                        installCli("rpm")
                         unstash 'properties'
                         popArtifactFolder("source_deb/", AWS_STASH_PATH)
                         script {
