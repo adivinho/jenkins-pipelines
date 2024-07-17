@@ -57,7 +57,7 @@ pipeline {
     }
 parameters {
         string(defaultValue: 'https://github.com/percona/percona-server.git', description: 'github repository for build', name: 'GIT_REPO')
-        string(defaultValue: 'release-8.0.31-22', description: 'Tag/Branch for percona-server repository', name: 'BRANCH')
+        string(defaultValue: 'release-8.0.37-29', description: 'Tag/Branch for percona-server repository', name: 'BRANCH')
         string(defaultValue: '1', description: 'RPM version', name: 'RPM_RELEASE')
         string(defaultValue: '1', description: 'DEB version', name: 'DEB_RELEASE')
         choice(
@@ -113,6 +113,7 @@ parameters {
         }
         stage('Build PS generic source packages') {
             parallel {
+/*
                 stage('Build PS generic source rpm') {
                     agent {
                         label 'docker-32gb-aarch64'
@@ -128,7 +129,8 @@ parameters {
                         uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
                     }
                 }
-/*                stage('Build PS generic source deb') {
+*/
+              stage('Build PS generic source deb') {
                     agent {
                         label 'min-bionic-x64'
                     }
@@ -143,7 +145,6 @@ parameters {
                         uploadDEBfromAWS("source_deb/", AWS_STASH_PATH)
                     }
                 }
-*/
             }  //parallel
         } // stage
         stage('Build PS RPMs/DEBs/Binary tarballs') {
@@ -163,7 +164,6 @@ parameters {
                         uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                     }
                 }
-*/
                 stage('Centos 8') {
                     agent {
                         label 'docker-32gb-aarch64'
@@ -194,24 +194,10 @@ parameters {
                         uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                     }
                 }
-/*                stage('Ubuntu Bionic(18.04)') {
-                    agent {
-                        label 'min-bionic-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("deb")
-                        unstash 'properties'
-                        popArtifactFolder("source_deb/", AWS_STASH_PATH)
-                        buildStage("ubuntu:bionic", "--build_deb=1")
-
-                        pushArtifactFolder("deb/", AWS_STASH_PATH)
-                        uploadDEBfromAWS("deb/", AWS_STASH_PATH)
-                    }
-                }
+*/
                 stage('Ubuntu Focal(20.04)') {
                     agent {
-                        label 'min-focal-x64'
+                        label 'docker-32gb-aarch64'
                     }
                     steps {
                         cleanUpWS()
@@ -226,7 +212,7 @@ parameters {
                 }
                 stage('Ubuntu Jammy(22.04)') {
                     agent {
-                        label 'min-jammy-x64'
+                        label 'docker-32gb-aarch64'
                     }
                     steps {
                         cleanUpWS()
@@ -239,16 +225,16 @@ parameters {
                         uploadDEBfromAWS("deb/", AWS_STASH_PATH)
                     }
                 }
-                stage('Debian Buster(10)') {
+                stage('Ubuntu Noble(24.04)') {
                     agent {
-                        label 'min-buster-x64'
+                        label 'docker-32gb-aarch64'
                     }
                     steps {
                         cleanUpWS()
                         installCli("deb")
                         unstash 'properties'
                         popArtifactFolder("source_deb/", AWS_STASH_PATH)
-                        buildStage("debian:buster", "--build_deb=1")
+                        buildStage("ubuntu:noble", "--build_deb=1")
 
                         pushArtifactFolder("deb/", AWS_STASH_PATH)
                         uploadDEBfromAWS("deb/", AWS_STASH_PATH)
@@ -256,7 +242,7 @@ parameters {
                 }
                 stage('Debian Bullseye(11)') {
                     agent {
-                        label 'min-bullseye-x64'
+                        label 'docker-32gb-aarch64'
                     }
                     steps {
                         cleanUpWS()
@@ -269,143 +255,29 @@ parameters {
                         uploadDEBfromAWS("deb/", AWS_STASH_PATH)
                     }
                 }
-                stage('Centos 7 binary tarball') {
+                stage('Debian Bookworm(12)') {
                     agent {
-                        label 'min-centos-7-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("rpm")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("centos:7", "--build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Centos 7 debug tarball') {
-                    agent {
-                        label 'min-centos-7-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("rpm")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("centos:7", "--debug=1 --build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Centos 8 binary tarball') {
-                    agent {
-                        label 'min-centos-8-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("rpm")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("centos:8", "--build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Centos 8 debug tarball') {
-                    agent {
-                        label 'min-centos-8-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("rpm")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("centos:8", "--debug=1 --build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Oracle Linux 9 binary tarball') {
-                    agent {
-                        label 'min-ol-9-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("rpm")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("oraclelinux:9", "--build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Bionic(18.04) binary tarball') {
-                    agent {
-                        label 'min-bionic-x64'
+                        label 'docker-32gb-aarch64'
                     }
                     steps {
                         cleanUpWS()
                         installCli("deb")
                         unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("ubuntu:bionic", "--build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Bionic(18.04) debug tarball') {
-                    agent {
-                        label 'min-bionic-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("deb")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("ubuntu:bionic", "--debug=1 --build_tarball=1 ")
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-                stage('Ubuntu Focal(20.04) ZenFS tarball') {
-                    agent {
-                        label 'min-focal-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("deb")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("ubuntu:focal", "--build_tarball=1")
+                        popArtifactFolder("source_deb/", AWS_STASH_PATH)
+                        buildStage("debian:bookworm", "--build_deb=1 --with_zenfs=1")
 
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
+                        pushArtifactFolder("deb/", AWS_STASH_PATH)
+                        uploadDEBfromAWS("deb/", AWS_STASH_PATH)
                     }
                 }
-                stage('Ubuntu Jammy(22.04) ZenFS tarball') {
-                    agent {
-                        label 'min-jammy-x64'
-                    }
-                    steps {
-                        cleanUpWS()
-                        installCli("deb")
-                        unstash 'properties'
-                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("ubuntu:jammy", "--build_tarball=1 --with_zenfs=1")
-
-                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
-                        uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
-                    }
-                }
-*/
             }
         }
 
         stage('Sign packages') {
             steps {
-                signRPM()
-/*                signDEB()
+/*                signRPM()
 */
+                signDEB()
             }
         }
         stage('Push to public repository') {
