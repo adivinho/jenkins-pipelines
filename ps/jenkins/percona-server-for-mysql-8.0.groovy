@@ -744,6 +744,46 @@ parameters {
                         pushArtifactFolder("tarball/", AWS_STASH_PATH)
                     }
                 }
+                stage('Ubuntu Noble(24.04) tarball') {
+                    agent {
+                        label 'min-noble-x64'
+                    }
+                    steps {
+                        cleanUpWS()
+                        installCli("deb")
+                        unstash 'properties'
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        script {
+                            if (env.FIPSMODE == 'YES') {
+                                buildStage("none", "--build_tarball=1 --enable_fipsmode=1")
+                            } else {
+                                buildStage("none", "--build_tarball=1")
+                            }
+                        }
+
+                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
+                    }
+                }
+                stage('Ubuntu Noble(24.04) debug tarball') {
+                    agent {
+                        label 'min-noble-x64'
+                    }
+                    steps {
+                        cleanUpWS()
+                        installCli("deb")
+                        unstash 'properties'
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        script {
+                            if (env.FIPSMODE == 'YES') {
+                                buildStage("none", "--debug=1 --build_tarball=1 --enable_fipsmode=1")
+                            } else {
+                                buildStage("none", "--debug=1 --build_tarball=1")
+                            }
+                        }
+
+                        pushArtifactFolder("tarball/", AWS_STASH_PATH)
+                    }
+                }
             }
         }
         stage('Upload packages and tarballs from S3') {
@@ -825,6 +865,7 @@ parameters {
                         unstash 'properties'
                         sh '''
                             PS_RELEASE=$(echo ${BRANCH} | sed 's/release-//g')
+                            PS_MAJOR_RELEASE=$(echo ${BRANCH} | sed "s/release-//g" | sed "s/\\.//g" | awk '{print substr($0, 0, 3)}')
                             if [ ${PS_MAJOR_RELEASE} != "80" ]; then
                                 MYSQL_SHELL_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 6)}' | sed 's/-//g')
                                 MYSQL_ROUTER_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 6)}' | sed 's/-//g')
@@ -832,7 +873,6 @@ parameters {
                                 MYSQL_SHELL_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 7)}' | sed 's/-//g')
                                 MYSQL_ROUTER_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 7)}' | sed 's/-//g')
                             fi
-                            PS_MAJOR_RELEASE=$(echo ${BRANCH} | sed "s/release-//g" | sed "s/\\.//g" | awk '{print substr($0, 0, 3)}')
                             sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
                             sudo apt-get install -y docker.io
                             sudo systemctl status docker
