@@ -761,15 +761,15 @@ parameters {
                 installCli("deb")
                 unstash 'properties'
 
-                uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                // uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                 uploadDEBfromAWS("deb/", AWS_STASH_PATH)
-                uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
+                // uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
             }
         }
 
         stage('Sign packages') {
             steps {
-                signRPM()
+              //  signRPM()
                 signDEB()
             }
         }
