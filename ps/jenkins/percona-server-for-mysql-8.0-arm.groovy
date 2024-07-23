@@ -37,7 +37,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         set -o xtrace
         mkdir -p test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
-        sed -i 's:dh_strip -Xlibprotobuf-lite:dh_strip -Xlibprotobuf-lite --exclude=debian/percona-server-server/usr/lib/mysql/plugin/authentication_fido.so:' ps_builder.sh
+        sed -i "/dh_strip/a sed -i 's:dh_strip -Xlibprotobuf-lite:dh_strip -Xlibprotobuf-lite --exclude=debian/percona-server-server/usr/lib/mysql/plugin/authentication_fido.so:' debina/rules" ps_builder.sh
         export build_dir=\$(pwd -P)
         if [ "$DOCKER_OS" = "none" ]; then
             set -o xtrace
