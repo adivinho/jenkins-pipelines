@@ -13,7 +13,10 @@ void installCli(String PLATFORM) {
             rm -rf aws
         fi
         if [ ${PLATFORM} = "deb" ]; then
-            sudo apt-get update
+            until sudo apt-get update; do
+                echo "waiting"
+                sleep 10
+            done
             sudo apt-get -y install wget curl unzip
         elif [ ${PLATFORM} = "rpm" ]; then
             export RHVER=\$(rpm --eval %rhel)
