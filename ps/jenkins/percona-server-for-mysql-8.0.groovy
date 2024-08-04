@@ -451,19 +451,9 @@ parameters {
                         label 'min-noble-x64'
                     }
                     steps {
-                        cleanUpWS()
-                        installCli("deb")
-                        unstash 'properties'
-                        popArtifactFolder("source_deb/", AWS_STASH_PATH)
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("none", "--build_deb=1 --with_zenfs=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("none", "--build_deb=1 --with_zenfs=1")
-                            }
+                        script { 
+                            echo "The step is skiped"
                         }
-
-                        pushArtifactFolder("deb/", AWS_STASH_PATH)
                     }
                 }
                 stage('Debian Bullseye(11)') {
