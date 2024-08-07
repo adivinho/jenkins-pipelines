@@ -7,7 +7,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
     sh """
         set -o xtrace
         mkdir test
-        wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${GIT_BRANCH}/config/scripts/pt_builder.sh -O pt_builder.sh
+        #wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${GIT_BRANCH}/config/scripts/pt_builder.sh -O pt_builder.sh
+        wget https://github.com/adivinho/percona-toolkit/raw/DISTMYSQL-438-Pt-sources-not-present-in-pdps-8.0-repo/config/scripts/pt_builder.sh -O pt_builder.sh
         pwd -P
         export build_dir=\$(pwd -P)
         docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -c "
