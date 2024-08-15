@@ -9,6 +9,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         set -o xtrace
         mkdir test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/storage/innobase/xtrabackup/utils/percona-xtrabackup-8.0_builder.sh -O percona-xtrabackup-8.0_builder.sh
+        sed -i 's|strip=5|strip=5; sed -i \"s/percona-xtrabackup-82/percona-xtrabackup-82, percona-xtrabackup-83/g\" percona-xtrabackup.spec; cat percona-xtrabackup.spec|g' percona-xtrabackup-8.0_builder.sh
         pwd -P
         export build_dir=\$(pwd -P)
         docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -c "
