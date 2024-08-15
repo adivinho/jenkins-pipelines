@@ -44,9 +44,9 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
             if [ -f ./test/percona-server-8.0.properties ]; then
                 . ./test/percona-server-8.0.properties
             fi
-            sudo cat /etc/apt/sources.list.d/ubuntu.sources
-            sudo sed -i 's|eu-west-1.ec2.||g' /etc/apt/sources.list.d/ubuntu.sources
-            sudo cat /etc/apt/sources.list.d/ubuntu.sources
+            sudo cat /etc/apt/sources.list.d/ubuntu.sources || true
+            sudo sed -i 's|eu-west-1.ec2.||g' /etc/apt/sources.list.d/ubuntu.sources || true
+            sudo cat /etc/apt/sources.list.d/ubuntu.sources || true
             sudo bash -x ./ps_builder.sh --builddir=\${build_dir}/test --install_deps=1
             if [ ${BUILD_TOKUDB_TOKUBACKUP} = "ON" ]; then
                 bash -x ./ps_builder.sh --builddir=\${build_dir}/test --repo=${GIT_REPO} --branch=${BRANCH} --build_tokudb_tokubackup=1 --perconaft_branch=${PERCONAFT_BRANCH} --tokubackup_branch=${TOKUBACKUP_BRANCH} --rpm_release=${RPM_RELEASE} --deb_release=${DEB_RELEASE} ${STAGE_PARAM}
