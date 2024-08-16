@@ -41,6 +41,9 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         set -o xtrace
         mkdir -p test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-5.7_builder.sh -o ps_builder.sh
+        sudo cat /etc/apt/sources.list.d/ubuntu.sources || true
+        sudo sed -i 's|eu-west-1.ec2.||g' /etc/apt/sources.list.d/ubuntu.sources || true
+        sudo cat /etc/apt/sources.list.d/ubuntu.sources || true
         pwd -P
         export build_dir=\$(pwd -P)
         set -o xtrace
