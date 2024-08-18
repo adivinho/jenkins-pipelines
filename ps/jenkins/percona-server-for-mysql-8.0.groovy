@@ -925,7 +925,6 @@ parameters {
                 }
             }
         }
-       }
     }
     post {
         success {
