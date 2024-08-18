@@ -38,7 +38,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         mkdir -p test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
         export build_dir=\$(pwd -P)
-        sed -i 's:8.0.28 packages:\n\tsed -i \"s/libnss3.so/libnss3.so libssl3.so/g\" build-ps/build-binary.sh || true\n:g' ps_builder.sh
+        sed -i 's|# PS-7429 Remove TokuDB and TokuBackup from Percona Server 8.0.28 packages|sed -i \"s/libnss3.so/libnss3.so libssl3.so/g\" build-ps/build-binary.sh |g' ps_builder.sh
         grep -A1 -B1 build-binary ps_builder.sh
         if [ "$DOCKER_OS" = "none" ]; then
             set -o xtrace
