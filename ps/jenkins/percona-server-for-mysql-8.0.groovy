@@ -38,6 +38,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         mkdir -p test
         wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
         export build_dir=\$(pwd -P)
+        sed -i 's:8.0.28 packages:\n\tsed -i \"s/libnss3.so/libnss3.so libssl3.so/g\" build-ps/build-binary.sh || true\n:g' ps_builder.sh
+        grep -A1 -B1 build-binary ps_builder.sh
         if [ "$DOCKER_OS" = "none" ]; then
             set -o xtrace
             cd \${build_dir}
@@ -309,6 +311,7 @@ parameters {
         } // stage
         stage('Build PS RPMs/DEBs/Binary tarballs') {
             parallel {
+/*
                 stage('Centos 7') {
                     agent {
                         label 'min-centos-7-x64'
@@ -609,6 +612,7 @@ parameters {
                         pushArtifactFolder("deb/", AWS_STASH_PATH)
                     }
                 }
+*/
                 stage('Centos 7 binary tarball') {
                     agent {
                         label 'min-centos-7-x64'
@@ -858,12 +862,14 @@ parameters {
                 installCli("deb")
                 unstash 'properties'
 
+/*
                 uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                 uploadDEBfromAWS("deb/", AWS_STASH_PATH)
+*/
                 uploadTarballfromAWS("tarball/", AWS_STASH_PATH, 'binary')
             }
         }
-
+/*
         stage('Sign packages') {
             steps {
                 signRPM()
@@ -901,6 +907,7 @@ parameters {
                 }
             }
         }
+*/
         stage('Push Tarballs to TESTING download area') {
             steps {
                 script {
@@ -918,6 +925,7 @@ parameters {
                 }
             }
         }
+/*
         stage('Build docker containers') {
             agent {
                 label 'min-focal-x64'
@@ -1035,6 +1043,7 @@ parameters {
                     }
                 }
             }
+*/
        }
     }
     post {
