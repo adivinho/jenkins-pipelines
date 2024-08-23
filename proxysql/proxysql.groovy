@@ -241,14 +241,14 @@ pipeline {
                         uploadDEBfromAWS("deb/", AWS_STASH_PATH)
                     }
                 }
-                stage('Oracle Linux 8 tarball') {
+                stage('Oracle Linux 7 tarball') {
                     agent {
                         label 'docker-32gb'
                     }
                     steps {
                         cleanUpWS()
                         popArtifactFolder("source_tarball/", AWS_STASH_PATH)
-                        buildStage("oraclelinux:8", "--build_tarball=1")
+                        buildStage("centos:7", "--build_tarball=1")
 
                         pushArtifactFolder("test/tarball/", AWS_STASH_PATH)
                         uploadTarballfromAWS("test/tarball/", AWS_STASH_PATH, 'binary')
