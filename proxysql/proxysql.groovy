@@ -254,6 +254,19 @@ pipeline {
                         uploadDEBfromAWS("deb/", AWS_STASH_PATH)
                     }
                 }
+                stage('Centos 7 tarball') {
+                    agent {
+                        label 'docker-32gb'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("source_tarball/", AWS_STASH_PATH)
+                        buildStage("centos:7", "--build_tarball=1")
+
+                        pushArtifactFolder("test/tarball/", AWS_STASH_PATH)
+                        uploadTarballfromAWS("test/tarball/", AWS_STASH_PATH, 'binary')
+                    }
+                }
                 stage('Oracle Linux 8 tarball') {
                     agent {
                         label 'docker-32gb'
