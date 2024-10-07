@@ -179,6 +179,7 @@ pipeline {
                         uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                     }
                 }
+/*
                 stage('Ubuntu Focal(20.04)') {
                     agent {
                         label 'docker-32gb'
@@ -343,13 +344,14 @@ pipeline {
                         uploadTarballfromAWS("test/tarball/", AWS_STASH_PATH, 'binary')
                     }
                 }
+*/
             }
         }
 
         stage('Sign packages') {
             steps {
                 signRPM()
-                signDEB()
+//                signDEB()
             }
         }
         stage('Push to public repository') {
@@ -369,6 +371,7 @@ pipeline {
                 }
             }
         }
+/*
         stage('Push Tarballs to TESTING download area') {
             steps {
                 script {
@@ -458,6 +461,7 @@ pipeline {
                  '''
                  }
             }
+*/
         }
     }
     post {
