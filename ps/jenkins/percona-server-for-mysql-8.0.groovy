@@ -306,7 +306,6 @@ parameters {
         } // stage
         stage('Build PS RPMs/DEBs/Binary tarballs') {
             parallel {
-/*
                 stage('Centos 7') {
                     agent {
                         label 'min-centos-7-x64'
@@ -327,7 +326,7 @@ parameters {
                         }
                     }
                 }
-*/
+/*
                 stage('Oracle Linux 8') {
                     agent {
                         label 'min-ol-8-x64'
@@ -368,6 +367,7 @@ parameters {
                         }
                     }
                 }
+*/
                 stage('Oracle Linux 9') {
                     agent {
                         label 'min-ol-9-x64'
@@ -388,6 +388,7 @@ parameters {
                         pushArtifactFolder("rpm/", AWS_STASH_PATH)
                     }
                 }
+/*
                 stage('Oracle Linux 9 ARM') {
                     agent {
                         label 'docker-32gb-aarch64'
@@ -608,7 +609,7 @@ parameters {
                         pushArtifactFolder("deb/", AWS_STASH_PATH)
                     }
                 }
-/*
+*/
                 stage('Centos 7 binary tarball') {
                     agent {
                         label 'min-centos-7-x64'
@@ -649,7 +650,7 @@ parameters {
                         }
                     }
                 }
-*/
+/*
                 stage('Oracle Linux 8 binary tarball') {
                     agent {
                         label 'min-ol-8-x64'
@@ -690,6 +691,7 @@ parameters {
                         }
                     }
                 }
+*/
                 stage('Oracle Linux 9 tarball') {
                     agent {
                         label 'min-ol-9-x64'
@@ -749,6 +751,7 @@ parameters {
                         pushArtifactFolder("tarball/", AWS_STASH_PATH)
                     }
                 }
+/*
                 stage('Ubuntu Focal(20.04) tarball') {
                     agent {
                         label 'min-focal-x64'
@@ -848,6 +851,7 @@ parameters {
                         pushArtifactFolder("tarball/", AWS_STASH_PATH)
                     }
                 }
+*/
             }
         }
         stage('Upload packages and tarballs from S3') {
@@ -919,6 +923,7 @@ parameters {
                 }
             }
         }
+/*
         stage('Build docker containers') {
             agent {
                 label 'min-focal-x64'
@@ -1042,6 +1047,7 @@ parameters {
                     }
                 }
             }
+*/
        }
     }
     post {
