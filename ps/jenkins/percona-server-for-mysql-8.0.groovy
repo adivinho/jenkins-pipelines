@@ -872,7 +872,6 @@ parameters {
         stage('Sign packages') {
             steps {
                 signRPM()
-                signDEB()
             }
         }
         stage('Push to public repository') {
