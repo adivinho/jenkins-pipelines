@@ -59,14 +59,29 @@ pipeline {
         }
         stage('Sync downloads to production') {
             steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                    sh '''
+                        echo "The step is skipped"
+                    '''
+                }
             }
         }
         stage('Sync private repos to production') {
             steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                    sh '''
+                        echo "The step is skipped"
+                    '''
+                }
             }
         }
         stage('Refresh downloads area') {
             steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                    sh '''
+                        echo "The step is skipped"
+                    '''
+                }
             }
         }
         stage('Cleanup') {
