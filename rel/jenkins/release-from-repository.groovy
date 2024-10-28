@@ -56,8 +56,8 @@ pipeline {
                             ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                echo ${algo}
-                                RHVERS=$(ls -1 binary/redhat | grep -v 6)
+                                echo \${algo}
+                                RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
                         """ 
                     }
