@@ -53,7 +53,9 @@ pipeline {
                                     algo="--no-database"
                                 fi
                             done
-                            ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                set -o errexit
+                                set -o xtrace
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
                                 echo \${algo}
