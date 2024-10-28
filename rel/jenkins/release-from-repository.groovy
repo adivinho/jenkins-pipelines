@@ -40,7 +40,8 @@ pipeline {
                         REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                         REPOPATH=${REPOSITORY}
                         pwd
-                        /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
+                        ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com \
+                            /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
                     '''
                 }
             }
