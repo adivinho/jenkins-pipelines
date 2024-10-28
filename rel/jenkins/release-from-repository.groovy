@@ -39,7 +39,8 @@ pipeline {
                     sh '''
                         REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                         REPOPATH=${REPOSITORY}
-                        /usr/bin/tree /srv/UPLOAD/${REPOPATH}
+                        pwd
+                        /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
                     '''
                 }
             }
