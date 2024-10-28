@@ -37,18 +37,29 @@ pipeline {
     stages {
         stage('Push to RPM repository') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh '''
-                        REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
-                        REPOPATH=${REPOSITORY}
-                        if [ x"${PATH_TO_BUILD}" = x ]; then
-                            echo "Empty path!"
-                            exit 1
-                        fi
-                        pwd
-                        ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com \
-                            /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
-                    '''
+                withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                        sh '''
+                            REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                            if [ x"${PATH_TO_BUILD}" = x ]; then
+                                echo "Empty path!"
+                                exit 1
+                            fi
+                            REPOPATH=repo-copy/${REPOSITORY}/yum
+                            algo=""
+                            NoDBRepos=("PSMDB-50", "PSMDB-60", "PSMDB-70", "PSMDB-80", "PSMDB-90", "PDMDB-5.0", "PDMDB-5.0.29", "PDMDB-6.0", "PDMDB-6.0.17")
+                            for repo in \${NoDBRepos[*]}; do
+                                if [ x"\${repo}" = x${REPOSITORY} ]
+                                    algo="--no-database"
+                                fi
+                            done
+                            ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
+                                cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                RHVERS=$(ls -1 binary/redhat | grep -v 6)
+ENDSSH
+                        '''
+                    }
                 }
             }
         }
