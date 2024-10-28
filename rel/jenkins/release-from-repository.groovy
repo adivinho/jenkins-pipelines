@@ -4,10 +4,10 @@ library changelog: false, identifier: 'lib@master', retriever: modernSCM([
 ]) _
 
 pipeline {
-    //agent {
-    //    label 'source-builder'
-    //}
-    agent any
+    agent {
+        label 'jenkins'
+    }
+    //agent any
     parameters {
         string(
             defaultValue: '',
