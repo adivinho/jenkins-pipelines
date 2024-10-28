@@ -36,19 +36,21 @@ pipeline {
         stage('Push to RPM repository') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                sh '''
-                    REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
-                    REPOPATH=${REPOSITORY}
-                    tree /srv/UPLOAD/${REPOPATH}
-                '''
+                    sh '''
+                        REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                        REPOPATH=${REPOSITORY}
+                        tree /srv/UPLOAD/${REPOPATH}
+                    '''
+                }
             }
         }
         stage('Push to DEB repository') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                sh '''
-                    echo "The step is skipped"
-                '''
+                    sh '''
+                        echo "The step is skipped"
+                    '''
+                }
 /*
                 updateRepoIndex(REPO_LINKS.split(','))
                 stash allowEmpty: true, includes: "new-index.html", name: "NewIndexHtml"
@@ -57,26 +59,14 @@ pipeline {
         }
         stage('Sync downloads to production') {
             steps {
-/*
-                unstash "NewIndexHtml"
-                syncRepoIndex()
-*/
             }
         }
         stage('Sync private repos to production') {
             steps {
-/*
-                unstash "NewIndexHtml"
-                syncRepoIndex()
-*/
             }
         }
         stage('Refresh downloads area') {
             steps {
-/*
-                unstash "NewIndexHtml"
-                syncRepoIndex()
-*/
             }
         }
         stage('Cleanup') {
