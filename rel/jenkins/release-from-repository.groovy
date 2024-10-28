@@ -17,6 +17,8 @@ pipeline {
             defaultValue: 'PERCONA',
             description: 'separate repository to push to',
             name: 'REPOSITORY')
+        booleanParam(name: 'REMOVE_BEFORE_PUSH', defaultValue: false, description: 'check to remove sources and binary version if equals pushing')
+        booleanParam(name: 'REMOVE_LOCKFILE', defaultValue: false, description: 'remove lockfile after unsuccessful push')
         choice(
             choices: 'TESTING\nRELEASE\nEXPERIMENTAL\nLABORATORY',
             description: 'repo component to push to',
@@ -39,6 +41,10 @@ pipeline {
                     sh '''
                         REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                         REPOPATH=${REPOSITORY}
+                        if [ x"${PATH_TO_BUILD}" = x ]; then
+                            echo "Empty path!"
+                            exit 1
+                        fi
                         pwd
                         ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${USER}@repo.ci.percona.com \
                             /usr/bin/tree /srv/UPLOAD/${PATH_TO_BUILD}
