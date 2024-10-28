@@ -20,7 +20,7 @@ pipeline {
         choice(
             choices: 'TESTING\nRELEASE\nEXPERIMENTAL\nLABORATORY',
             description: 'repo component to push to',
-            name: 'COMPONET')
+            name: 'COMPONENT')
         choice(
             choices: 'NO\nYES',
             description: 'PRO build',
@@ -39,7 +39,7 @@ pipeline {
                     sh '''
                         REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                         REPOPATH=${REPOSITORY}
-                        tree /srv/UPLOAD/${REPOPATH}
+                        /usr/bin/tree /srv/UPLOAD/${REPOPATH}
                     '''
                 }
             }
