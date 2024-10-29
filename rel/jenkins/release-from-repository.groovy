@@ -63,7 +63,7 @@ pipeline {
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
                                 else
-                                    export REPOPATH="repo-copy/\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')/yum"
+                                    export REPOPATH="repo-copy/$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
                                 tree
