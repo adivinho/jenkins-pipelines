@@ -46,11 +46,11 @@ pipeline {
                                 exit 1
                             fi
                             REPOPATH=repo-copy/${REPOSITORY}/yum
-                            algo=""
+                            export algo=""
                             NoDBRepos=("PSMDB" "PDMDB")
                             for repo in \${NoDBRepos[*]}; do
                                 if [ x"\${repo}" = x"\${REPOSITORY}"* ]; then
-                                    export \${algo}="--no-database"
+                                    \${algo}="--no-database"
                                 fi
                             done
                             echo "======> "${algo}
