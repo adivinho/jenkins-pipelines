@@ -70,7 +70,7 @@ pipeline {
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
                                 echo "=====> "\${RHVERS}
                                 if [[ -d source/redhat ]]; then
-                                    SRCRPM=$(find source/redhat -name '*.src.rpm')
+                                    SRCRPM=\$(find source/redhat -name '*.src.rpm')
                                     for rhel in \${RHVERS}; do
                                         echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
                                         echo "cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
@@ -81,20 +81,6 @@ pipeline {
                                         echo "gpg --detach-sign --armor --passphrase $PASSWORD  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml"
                                     done
                                 fi
-                                pushd binary
-                                for rhel in \${RHVERS}; do
-                                    echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS"
-                                    for arch in $(ls -1 redhat/\${rhel}); do
-                                        echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}"
-                                        echo "cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
-                                        echo "createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
-                                        if [ -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc ]; then
-                                            echo "rm -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc"
-                                        fi
-                                        echo "gpg --detach-sign --armor --passphrase $PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml"
-                                    done
-                                done
-                                echo "date +%s > /srv/repo-copy/version"
 ENDSSH
                         """ 
                     }
