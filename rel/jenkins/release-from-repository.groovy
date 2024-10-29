@@ -61,6 +61,11 @@ pipeline {
                                 if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
                                     export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                 fi
+                                if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
+                                    export REPOPATH="yum-repo"
+                                else
+                                    export REPOPATH="repo-copy/"\\\${LCREPOSITORY}"/yum"
+                                fi
 ENDSSH
                         """ 
                     }
