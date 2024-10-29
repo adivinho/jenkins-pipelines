@@ -85,7 +85,7 @@ pipeline {
                                 pushd binary
                                 for rhel in \${RHVERS}; do
                                     echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS"
-                                    for arch in $(ls -1 redhat/\${rhel}); do
+                                    for arch in \$(ls -1 redhat/\${rhel}); do
                                         echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}"
                                         echo "cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
                                         echo "createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
