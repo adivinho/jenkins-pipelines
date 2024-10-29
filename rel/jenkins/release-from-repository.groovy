@@ -78,7 +78,7 @@ pipeline {
                                         if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
                                             echo "rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc"
                                         fi
-                                        echo "gpg --detach-sign --armor --passphrase $PASSWORD  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml"
+                                        echo "gpg --detach-sign --armor --passphrase $SIGN_PASSWORD  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml"
                                     done
                                 fi
 ENDSSH
