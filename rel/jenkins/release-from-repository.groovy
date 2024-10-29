@@ -81,6 +81,21 @@ pipeline {
                                         echo "gpg --detach-sign --armor --passphrase $SIGN_PASSWORD  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml"
                                     done
                                 fi
+                                # -------------------------------------> binary processing
+                                pushd binary
+                                for rhel in \${RHVERS}; do
+                                    echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS"
+                                    for arch in $(ls -1 redhat/\${rhel}); do
+                                        echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}"
+                                        echo "cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
+                                        echo "createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
+                                        if [ -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc ]; then
+                                            echo "rm -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc"
+                                        fi
+                                        echo "gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml"
+                                    done
+                                done
+                                echo "date +%s > /srv/repo-copy/version"
 ENDSSH
                         """ 
                     }
