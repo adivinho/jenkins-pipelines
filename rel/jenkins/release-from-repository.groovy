@@ -64,7 +64,7 @@ pipeline {
                                     export REPOPATH="yum-repo"
                                 else
                                     LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                    export REPOPATH="repo-copy/"\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')"/yum"
+                                    export REPOPATH="repo-copy/\${LCREPOSITORY}/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
                                 tree
