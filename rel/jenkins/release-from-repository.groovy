@@ -60,7 +60,7 @@ pipeline {
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
                                 REPOPUSH_ARGS=""
-                                if [ ${REMOVE_BEFORE_PUSH} -eq 0 ]; then
+                                if [ ${REMOVE_BEFORE_PUSH} = true ]; then
                                      REPOPUSH_ARGS=" --remove-package "
                                 fi
 				echo "====> "\${REPOPUSH_ARGS}
