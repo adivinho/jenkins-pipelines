@@ -41,6 +41,7 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                         sh """ 
                             REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                            LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                             if [ x"${PATH_TO_BUILD}" = x ]; then
                                 echo "Empty path!"
                                 exit 1
@@ -63,11 +64,9 @@ pipeline {
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
                                 else
-                                    LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                    export REPOPATH="repo-copy/\${LCREPOSITORY}/yum"
+                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
-                                tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
                                 echo "=====> "\${RHVERS}
                                 # -------------------------------------> source processing
