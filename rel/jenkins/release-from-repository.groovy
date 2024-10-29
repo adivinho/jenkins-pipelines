@@ -49,7 +49,8 @@ pipeline {
                             algo=""
                             NoDBRepos=("PSMDB" "PDMDB")
                             for repo in \${NoDBRepos[*]}; do
-                                if [ "\${repo}"* == "${REPOSITORY}" ]; then
+                            #    if [ "\${repo}"* == "${REPOSITORY}" ]; then
+                                if [[ "${repo}"* == "${REPOSITORY}" ]]; then
                                     algo="--no-database"
                                 fi
                             done
