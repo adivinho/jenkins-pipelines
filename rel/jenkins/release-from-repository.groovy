@@ -58,8 +58,9 @@ pipeline {
                                         export ALGO="--no-database"
                                     fi
                                 done
+                                echo "= PATH ====> "\${PATH}
                                 if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
-                                    export PATH="/usr/local/reprepro5/bin:\\\${PATH}"
+                                    export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                 fi
                                 echo "= ALGO ====> "\${ALGO}
                                 echo "= PATH ====> "\${PATH}
