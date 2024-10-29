@@ -51,7 +51,7 @@ pipeline {
                             for repo in \${NoDBRepos[*]}; do
                             #    if [ "\${repo}"* == "${REPOSITORY}" ]; then
                                 if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
-                                    algo="--no-database"
+                                    export algo="--no-database"
                                 fi
                             done
                             echo "=====> "\${algo}
