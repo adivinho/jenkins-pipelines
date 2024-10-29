@@ -50,7 +50,7 @@ pipeline {
                             NoDBRepos=("PSMDB" "PDMDB")
                             for repo in \${NoDBRepos[*]}; do
                                 if [ x"\${repo}" = x"\${REPOSITORY}"* ]; then
-                                    export algo="--no-database"
+                                    export \${algo}="--no-database"
                                 fi
                             done
                             echo "======> "${algo}
