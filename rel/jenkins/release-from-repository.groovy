@@ -53,7 +53,7 @@ pipeline {
                                     algo="--no-database"
                                 fi
                             done
-                            echo ${algo}
+                            echo \${algo}
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
