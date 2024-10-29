@@ -63,8 +63,8 @@ pipeline {
                                 fi
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
-                                else
-                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
+                                #else
+                                #    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
