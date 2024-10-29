@@ -66,6 +66,7 @@ pipeline {
                                 else
                                     export REPOPATH="repo-copy/"\\\${LCREPOSITORY}"/yum"
                                 fi
+                                echo \${REPOPATH}
 ENDSSH
                         """ 
                     }
