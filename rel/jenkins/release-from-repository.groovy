@@ -47,18 +47,20 @@ pipeline {
                             fi
                             REPOPATH=repo-copy/${REPOSITORY}/yum
                             algo=""
-                            NoDBRepos=("PSMDB-50" "PSMDB-60" "PSMDB-70" "PSMDB-80" "PSMDB-90" "PDMDB-5.0" "PDMDB-5.0.29" "PDMDB-6.0" "PDMDB-6.0.17")
+                            NoDBRepos=("PSMDB" "PDMDB")
                             for repo in \${NoDBRepos[*]}; do
-                                if [ x"\${repo}" = x"\${REPOSITORY}" ]; then
-                                    algo="--no-database"
+                                if [ x"\${repo}" == x"\${REPOSITORY}"* ]; then
+                                    export algo="--no-database"
                                 fi
                             done
+                            echo "======> "${algo}
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                echo \${algo}
+                                tree
+                                echo "======> "\${algo}" <======="
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
                         """ 
