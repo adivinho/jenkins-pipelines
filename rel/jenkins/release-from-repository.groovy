@@ -64,7 +64,6 @@ pipeline {
                                      REPOPUSH_ARGS=" --remove-package "
                                 fi
                                 echo ${REPOPUSH_ARGS}
-                                echo ${algo}
                                 tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
