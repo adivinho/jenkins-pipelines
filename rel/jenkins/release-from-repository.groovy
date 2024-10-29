@@ -49,15 +49,22 @@ pipeline {
                             algo=""
                             NoDBRepos=("PSMDB" "PDMDB")
                             for repo in \${NoDBRepos[*]}; do
-                                if [ x"\${repo}" = x"\${REPOSITORY}"* ]; then
+                                if [ x"\${repo}"* = x"\${REPOSITORY}" ]; then
                                     algo="--no-database"
                                 fi
                             done
+                            echo ${algo}
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                REPOPUSH_ARGS=""
+                                if [ \${REMOVE_BEFORE_PUSH} -eq 0 ]; then
+                                     REPOPUSH_ARGS=" --remove-package "
+                                fi
+                                echo ${REPOPUSH_ARGS}
+                                echo ${algo}
                                 tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
