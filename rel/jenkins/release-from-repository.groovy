@@ -15,7 +15,7 @@ pipeline {
             name: 'PATH_TO_BUILD')
         string(
             defaultValue: 'INNOVATION',
-            description: 'separate repository to push to',
+            description: 'separate repository to push to. Please use CAPS letters.',
             name: 'REPOSITORY')
         booleanParam(name: 'REMOVE_BEFORE_PUSH', defaultValue: false, description: 'check to remove sources and binary version if equals pushing')
         booleanParam(name: 'REMOVE_LOCKFILE', defaultValue: false, description: 'remove lockfile after unsuccessful push')
@@ -63,7 +63,8 @@ pipeline {
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
                                 else
-                                    export REPOPATH="repo-copy/$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')/yum"
+                                    LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+                                    export REPOPATH="repo-copy/"\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')"/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
                                 tree
