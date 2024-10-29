@@ -14,7 +14,7 @@ pipeline {
             description: 'PATH_TO_BUILD must be in form $DESTINATION/**release**/$revision',
             name: 'PATH_TO_BUILD')
         string(
-            defaultValue: 'PERCONA',
+            defaultValue: 'INNOVATION',
             description: 'separate repository to push to',
             name: 'REPOSITORY')
         booleanParam(name: 'REMOVE_BEFORE_PUSH', defaultValue: false, description: 'check to remove sources and binary version if equals pushing')
@@ -45,7 +45,6 @@ pipeline {
                                 echo "Empty path!"
                                 exit 1
                             fi
-                            REPOPATH=repo-copy/${REPOSITORY}/yum
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
@@ -58,15 +57,46 @@ pipeline {
                                         export ALGO="--no-database"
                                     fi
                                 done
-                                echo "= PATH ====> "\${PATH}
                                 if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
                                     export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                 fi
-                                echo "= ALGO ====> "\${ALGO}
-                                echo "= PATH ====> "\${PATH}
+                                if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
+                                    export REPOPATH="yum-repo"
+                                else
+                                    export REPOPATH="repo-copy/\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')/yum"
+                                fi
+                                echo "=====> "\${REPOPATH}
                                 tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
                                 echo "=====> "\${RHVERS}
+                                # -------------------------------------> source processing
+                                if [[ -d source/redhat ]]; then
+                                    SRCRPM=$(find source/redhat -name '*.src.rpm')
+                                    for rhel in \${RHVERS}; do
+                                        echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
+                                        echo "cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
+                                        echo "createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
+                                        if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
+                                            echo "rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc"
+                                        fi
+                                        echo "gpg --detach-sign --armor --passphrase $PASSWORD  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml"
+                                    done
+                                fi
+                                # -------------------------------------> binary processing
+                                pushd binary
+                                for rhel in \${RHVERS}; do
+                                    echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS"
+                                    for arch in $(ls -1 redhat/\${rhel}); do
+                                        echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}"
+                                        echo "cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
+                                        echo "createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/"
+                                        if [ -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc ]; then
+                                            echo "rm -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc"
+                                        fi
+                                        echo "gpg --detach-sign --armor --passphrase $PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml"
+                                    done
+                                done
+                                echo "date +%s > /srv/repo-copy/version"
 ENDSSH
                         """ 
                     }
