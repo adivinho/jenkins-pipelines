@@ -46,26 +46,19 @@ pipeline {
                                 exit 1
                             fi
                             REPOPATH=repo-copy/${REPOSITORY}/yum
-                            algo=""
-                            NoDBRepos=("PSMDB" "PDMDB")
-                            for repo in \${NoDBRepos[*]}; do
-                            #    if [ "\${repo}"* == "${REPOSITORY}" ]; then
-                                if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
-                                    export algo="--no-database"
-                                fi
-                            done
-                            echo "=====> "\${algo}
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                REPOPUSH_ARGS=""
-                                if [ ${REMOVE_BEFORE_PUSH} = true ]; then
-                                     REPOPUSH_ARGS=" --remove-package "
-                                fi
-				echo "====> "\${REPOPUSH_ARGS}
-                                echo "=====> "\${algo}
+                                ALGO=""
+                                NoDBRepos=("PSMDB" "PDMDB")
+                                for repo in \${NoDBRepos[*]}; do
+                                    if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
+                                        export ALGO="--no-database"
+                                    fi
+                                done
+                                echo "=====> "\${ALGO}
                                 tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
@@ -76,15 +69,29 @@ ENDSSH
         }
         stage('Push to DEB repository') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh '''
-                        echo "The step is skipped"
-                    '''
+                withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                        sh """
+                            REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                            if [ x"${PATH_TO_BUILD}" = x ]; then
+                                echo "Empty path!"
+                                exit 1
+                            fi
+                            REPOPATH=repo-copy/${REPOSITORY}/apt
+                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                set -o errexit
+                                set -o xtrace
+                                echo /srv/UPLOAD/${PATH_TO_BUILD}
+                                cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                REPOPUSH_ARGS=""
+                                if [ ${REMOVE_BEFORE_PUSH} = true ]; then
+                                     REPOPUSH_ARGS=" --remove-package "
+                                fi
+                                tree
+ENDSSH
+                        """
+                    }
                 }
-/*
-                updateRepoIndex(REPO_LINKS.split(','))
-                stash allowEmpty: true, includes: "new-index.html", name: "NewIndexHtml"
-*/
             }
         }
         stage('Sync downloads to production') {
