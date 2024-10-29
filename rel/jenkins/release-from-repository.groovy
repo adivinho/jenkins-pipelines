@@ -61,10 +61,11 @@ pipeline {
                                 if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
                                     export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                 fi
+/*
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
-                                #else
-                                #    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
+                                else
+                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
                                 fi
                                 echo "=====> "\${REPOPATH}
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
@@ -97,6 +98,7 @@ pipeline {
                                     done
                                 done
                                 echo "date +%s > /srv/repo-copy/version"
+*/
 ENDSSH
                         """ 
                     }
