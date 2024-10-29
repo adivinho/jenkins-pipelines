@@ -63,7 +63,7 @@ pipeline {
                                 if [ \${REMOVE_BEFORE_PUSH} -eq 0 ]; then
                                      REPOPUSH_ARGS=" --remove-package "
                                 fi
-                                echo ${REPOPUSH_ARGS}
+                                echo \${REPOPUSH_ARGS}
                                 tree
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
 ENDSSH
