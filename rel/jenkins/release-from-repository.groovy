@@ -40,8 +40,6 @@ pipeline {
                 withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
                     withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                         sh """ 
-                            REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
-                            LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                             if [ x"${PATH_TO_BUILD}" = x ]; then
                                 echo "Empty path!"
                                 exit 1
@@ -52,6 +50,8 @@ pipeline {
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
                                 ALGO=""
+                                REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                                 NoDBRepos=("PSMDB" "PDMDB")
                                 for repo in \${NoDBRepos[*]}; do
                                     if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
@@ -64,7 +64,7 @@ pipeline {
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                     export REPOPATH="yum-repo"
                                 else
-                                    export REPOPATH="repo-copy/"\\\${LCREPOSITORY}"/yum"
+                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
                                 fi
                                 echo \${REPOPATH}
 ENDSSH
