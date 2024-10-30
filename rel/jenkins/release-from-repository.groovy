@@ -138,7 +138,7 @@ ENDSSH
                                 set -e
                                 echo "<*> path to repo is "\${REPOPATH}
                                 echo "<*> reprepro binary is "\$(which reprepro)
-                                pushd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
+                                cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
                                 CODENAMES=\$(ls -1)
                                 echo "<*> Distributions are: "\${CODENAMES}
                                 tree
@@ -162,7 +162,17 @@ ENDSSH
                                         done
                                      fi
                                 fi
-
+                                # -------------------------------------> binary pushing
+                                cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
+                                for _codename in \${CODENAMES}; do
+                                    echo "<*> CODENAME: "\${_codename}
+                                    pushd \${_codename}
+                                    DEBS=\$(find . -type f -name '*.*deb' )
+                                    for _deb in \${DEBS}; do
+                                        echo "repopush --gpg-pass=${SIGN_PASSWORD} --package=\${_deb} --repo-path=\${REPOPATH} --component=\${REPOCOMP} --codename=\${_codename} --verbose \${REPOPUSH_ARGS}"
+                                    done
+                                    popd
+                                done
 ENDSSH
                         """
                     }
