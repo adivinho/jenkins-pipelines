@@ -91,7 +91,6 @@ pipeline {
                                             gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
                                         done
                                     fi
-                                    exit 1
                                     # -------------------------------------> binary processing
                                     pushd binary
                                     for rhel in \${RHVERS}; do
