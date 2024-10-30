@@ -289,8 +289,8 @@ ENDSSH
                                    cd \${RELEASEDIR}/..
                                    ln -s \${RELEASE} LATEST
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
-                                   echo "rsync -avt -e "ssh -p 2222" --bwlimit=50000 --exclude="*yassl*" --progress \${PRODUCT} jenkins-deploy.jenkins-deploy.web.r.int.percona.com:/data/downloads/"
-                                   #rm -fr /srv/UPLOAD/\${PATH_TO_BUILD}/.tmp
+                                   rsync -avt -e "ssh -p 2222" --bwlimit=50000 --exclude="*yassl*" --progress \${PRODUCT} jenkins-deploy.jenkins-deploy.web.r.int.percona.com:/data/downloads/
+                                   rm -fr /srv/UPLOAD/\${PATH_TO_BUILD}/.tmp
                                fi
 ENDSSH
                        else
