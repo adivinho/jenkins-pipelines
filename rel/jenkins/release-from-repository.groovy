@@ -16,6 +16,7 @@ pipeline {
             defaultValue: 'INNOVATION',
             description: 'separate repository to push to. Please use CAPS letters.',
             name: 'REPOSITORY')
+        booleanParam(name: 'REVERSE', defaultValue: false, description: 'please use reverse sync if you want to fix repo copy on signing server. it will be overwritten with known working copy from production')
         booleanParam(name: 'REMOVE_BEFORE_PUSH', defaultValue: false, description: 'check to remove sources and binary version if equals pushing')
         booleanParam(name: 'REMOVE_LOCKFILE', defaultValue: false, description: 'remove lockfile after unsuccessful push')
         choice(
@@ -110,7 +111,6 @@ ENDSSH
                                 echo "Empty path!"
                                 exit 1
                             fi
-                            REPOPATH=repo-copy/${REPOSITORY}/apt
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
@@ -156,7 +156,7 @@ ENDSSH
                                             echo "<*> DSC file is "\${DSC_FILE}
                                             for _codename in \${CODENAMES}; do
                                                 echo "<*> CODENAME: "\${_codename}
-                                                echo "repopush --gpg-pass=${SIGN_PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true"
+                                                repopush --gpg-pass=${SIGN_PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true
                                                 sleep 5
                                             done
                                         done
@@ -169,26 +169,39 @@ ENDSSH
                                     pushd \${_codename}
                                     DEBS=\$(find . -type f -name '*.*deb' )
                                     for _deb in \${DEBS}; do
-                                        echo "repopush --gpg-pass=${SIGN_PASSWORD} --package=\${_deb} --repo-path=\${REPOPATH} --component=\${REPOCOMP} --codename=\${_codename} --verbose \${REPOPUSH_ARGS}"
+                                        repopush --gpg-pass=${SIGN_PASSWORD} --package=\${_deb} --repo-path=\${REPOPATH} --component=\${REPOCOMP} --codename=\${_codename} --verbose \${REPOPUSH_ARGS}
                                     done
                                     popd
                                 done
+                                date +%s > /srv/repo-copy/version
 ENDSSH
                         """
                     }
                 }
             }
         }
-        stage('Sync downloads to production') {
+        stage('Sync repos to production') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh '''
-                        echo "The step is skipped"
-                    '''
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                            set -o errexit
+                            set -o xtrace
+                            LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+                            cd /srv/repo-copy
+                            RSYNC_TRANSFER_OPTS=" -avt --delete --delete-excluded --delete-after --progress"
+                            if [[ ${REVERSE} = true ]]; then
+                                rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${LCREPOSITORY}/* /srv/repo-copy/\${LCREPOSITORY}/
+                            else
+                                rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${LCREPOSITORY}/
+                                rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/version 10.30.9.32:/www/repo.percona.com/htdocs/
+                            fi
+ENDSSH
+                    """
                 }
             }
         }
-        stage('Sync private repos to production') {
+        stage('Sync packages to production download') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                     sh '''
