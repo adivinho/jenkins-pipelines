@@ -101,10 +101,10 @@ pipeline {
                                         done
                                     done
                                     date +%s > /srv/repo-copy/version
-                            else
-                               echo "The step is skipped."
-                            fi
 ENDSSH
+                           else
+                              echo "The step is skipped."
+                           fi
                         """ 
                     }
                 }
@@ -182,10 +182,10 @@ ENDSSH
                                         popd
                                     done
                                     date +%s > /srv/repo-copy/version
+ENDSSH
                             else
                                 echo "The step is skipped."
                             fi
-ENDSSH
                         """
                     }
                 }
