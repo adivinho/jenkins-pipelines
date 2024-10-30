@@ -105,7 +105,7 @@ pipeline {
                                             gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml
                                         done
                                     done
-                                    date +%s > /srv/repo-copy/version
+                                    date +%s > /srv/repo-copy/\${PRO_FOLDER}version
 ENDSSH
                            else
                               echo "The step is skipped."
@@ -190,7 +190,7 @@ ENDSSH
                                         done
                                         popd
                                     done
-                                    date +%s > /srv/repo-copy/version
+                                    date +%s > /srv/repo-copy/\${PRO_FOLDER}version
 ENDSSH
                             else
                                 echo "The step is skipped."
@@ -220,7 +220,7 @@ ENDSSH
                                     rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/* /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/
                                 else
                                     rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/
-                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\version 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}
+                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}version 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}
                                 fi
 ENDSSH
                         else
