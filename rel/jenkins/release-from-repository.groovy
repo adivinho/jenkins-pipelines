@@ -54,7 +54,7 @@ pipeline {
                                     set -o xtrace
                                     echo /srv/UPLOAD/${PATH_TO_BUILD}
                                     cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                    if [ ${PROBUILD} = true ]; then
+                                    if [ ${PROBUILD} = YES ]; then
                                         PRO_FOLDER="private/"
                                     else
                                         PRO_FOLDER=""
