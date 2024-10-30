@@ -200,36 +200,6 @@ ENDSSH
                 }
             }
         }
-        stage('Sync repos to production') {
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh """
-                        if [ ${SKIP_REPO_SYNC} = false ]; then
-                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
-                                set -o errexit
-                                set -o xtrace
-                                if [ ${PROBUILD} = YES ]; then
-                                    PRO_FOLDER="private/"
-                                else
-                                    PRO_FOLDER=""
-                                fi
-                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                cd /srv/repo-copy/\${PRO_FOLDER}
-                                RSYNC_TRANSFER_OPTS=" -avt --delete --delete-excluded --delete-after --progress"
-                                if [[ ${REVERSE} = true ]]; then
-                                    rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/* /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/
-                                else
-                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/
-                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}version 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}
-                                fi
-ENDSSH
-                        else
-                            echo "The step is skipped."
-                        fi
-                    """
-                }
-            }
-        }
         stage('Sync packages to production download') {
             steps {
                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
@@ -317,6 +287,36 @@ ENDSSH
                            echo "The step is skipped."
                        fi
                    """
+                }
+            }
+        }
+        stage('Sync repos to production') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
+                    sh """
+                        if [ ${SKIP_REPO_SYNC} = false ]; then
+                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                set -o errexit
+                                set -o xtrace
+                                if [ ${PROBUILD} = YES ]; then
+                                    PRO_FOLDER="private/"
+                                else
+                                    PRO_FOLDER=""
+                                fi
+                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+                                cd /srv/repo-copy/\${PRO_FOLDER}
+                                RSYNC_TRANSFER_OPTS=" -avt --delete --delete-excluded --delete-after --progress"
+                                if [[ ${REVERSE} = true ]]; then
+                                    rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/* /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/
+                                else
+                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/
+                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}version 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}
+                                fi
+ENDSSH
+                        else
+                            echo "The step is skipped."
+                        fi
+                    """
                 }
             }
         }
