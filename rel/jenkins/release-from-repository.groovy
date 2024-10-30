@@ -54,6 +54,11 @@ pipeline {
                                     set -o xtrace
                                     echo /srv/UPLOAD/${PATH_TO_BUILD}
                                     cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                    if [ ${PROBUILD} = true ]; then
+                                        PRO_FOLDER="private/"
+                                    else
+                                        PRO_FOLDER=""
+                                    fi
                                     ALGO=""
                                     REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                                     LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
@@ -69,7 +74,7 @@ pipeline {
                                     if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                        export REPOPATH="yum-repo"
                                     else
-                                       export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
+                                       export REPOPATH="repo-copy/"\${PRO_FOLDER}\${LCREPOSITORY}"/yum"
                                     fi
                                     echo \${REPOPATH}
                                     RHVERS=\$(ls -1 binary/redhat | grep -v 6)
@@ -77,15 +82,16 @@ pipeline {
                                     if [[ -d source/redhat ]]; then
                                         SRCRPM=\$(find source/redhat -name '*.src.rpm')
                                         for rhel in \${RHVERS}; do
-                                            mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                            cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                            createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                            if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
-                                                rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
-                                            fi
-                                            gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
+                                            echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
+                                            #cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            #createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            #if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
+                                            #    rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
+                                            #fi
+                                            #gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
                                         done
                                     fi
+                                    exit 1
                                     # -------------------------------------> binary processing
                                     pushd binary
                                     for rhel in \${RHVERS}; do
