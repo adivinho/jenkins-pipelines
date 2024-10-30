@@ -220,31 +220,37 @@ ENDSSH
             steps {
                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                    sh """
-                       if [ ${COMPONENT} = RELEASE ]; then
-                           set -e
-                           cd /srv/UPLOAD/${PATH_TO_BUILD}/
-                           PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
-                           RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
-                           REVISION=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
-                           RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
-                           rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
-                           mkdir -p \${RELEASEDIR}
-                           cp -av ./* \${RELEASEDIR}
-                           # -------------------------------------> create RedHat tar bundles
-                           cd \${RELEASEDIR}/binary/redhat
-                           for _dist in *; do
-                               cd \${_dist}
-                               for _arch in *; do
-                                   cd \${_arch}
-                                   # don't create bundle if there's only 1 package inside directory
-                                   NUM_PACKAGES=\$(find . -maxdepth 1 -type f -name '*.rpm'|wc -l)
-                                   if [ \${NUM_PACKAGES} -gt 1 ]; then
-                                       tar --owner=0 --group=0 -cf \${RELEASE}-r\${REVISION}-el\${_dist}-\${_arch}-bundle.tar  *.rpm
-                                   fi
-                                   cd ..
-                               done
-                               cd ..
-                           done
+                       if [ ${SKIP_PACKAGES_SYNC} = false ]; then
+                           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                               if [ ${COMPONENT} = RELEASE ]; then
+                                   set -e
+                                   cd /srv/UPLOAD/${PATH_TO_BUILD}/
+                                   PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
+                                   RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
+                                   REVISION=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
+                                   RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
+                                   rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
+                                   mkdir -p \${RELEASEDIR}
+                                   cp -av ./* \${RELEASEDIR}
+                                   # -------------------------------------> create RedHat tar bundles
+                                   cd \${RELEASEDIR}/binary/redhat
+                                   for _dist in *; do
+                                       cd \${_dist}
+                                       for _arch in *; do
+                                           cd \${_arch}
+                                           # don't create bundle if there's only 1 package inside directory
+                                           NUM_PACKAGES=\$(find . -maxdepth 1 -type f -name '*.rpm'|wc -l)
+                                           if [ \${NUM_PACKAGES} -gt 1 ]; then
+                                               tar --owner=0 --group=0 -cf \${RELEASE}-r\${REVISION}-el\${_dist}-\${_arch}-bundle.tar  *.rpm
+                                           fi
+                                           cd ..
+                                       done
+                                       cd ..
+                                   done
+                               fi
+ENDSSH
+                       else
+                           echo "The step is skipped."
                        fi
                    """
                 }
