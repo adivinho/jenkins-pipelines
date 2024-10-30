@@ -139,7 +139,14 @@ ENDSSH
                                 echo "<*> path to repo is "\${REPOPATH}
                                 echo "<*> reprepro binary is "\$(which reprepro)
                                 pushd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
+                                CODENAMES=\$(ls -1)
+                                echo "Distributions are: "\${CODENAMES}
                                 tree
+                                # -------------------------------------> source pushing, it's a bit specific
+                                if [[ ${REMOVE_LOCKFILE} = true ]]; then
+                                    echo "Removing lock file as requested..."
+                                    rm -vf  /srv/\${REPOPATH}/db/lockfile
+                                fi
 ENDSSH
                         """
                     }
