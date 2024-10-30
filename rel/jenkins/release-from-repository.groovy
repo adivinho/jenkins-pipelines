@@ -101,7 +101,9 @@ pipeline {
                                         done
                                     done
                                     date +%s > /srv/repo-copy/version
-                            fi # -- SKIP_RPM_PUSH
+                            else
+                               echo "The step is skipped."
+                            fi
 ENDSSH
                         """ 
                     }
@@ -180,7 +182,9 @@ ENDSSH
                                         popd
                                     done
                                     date +%s > /srv/repo-copy/version
-                            fi # -- SKIP_DEB_PUSH 
+                            else
+                                echo "The step is skipped."
+                            fi
 ENDSSH
                         """
                     }
