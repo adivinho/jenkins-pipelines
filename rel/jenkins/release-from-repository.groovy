@@ -128,8 +128,12 @@ ENDSSH
                                 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                     set -o errexit
                                     set -o xtrace
-                                    echo /srv/UPLOAD/${PATH_TO_BUILD}
                                     cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                    if [ ${PROBUILD} = YES ]; then
+                                        PRO_FOLDER="private/"
+                                    else
+                                        PRO_FOLDER=""
+                                    fi
                                     REPOPUSH_ARGS=""
                                     REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                                     LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
@@ -147,7 +151,7 @@ ENDSSH
                                     if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
                                        export REPOPATH="/srv/apt-repo"
                                     else
-                                       export REPOPATH="/srv/repo-copy/"\${LCREPOSITORY}"/apt"
+                                       export REPOPATH="/srv/repo-copy/"\${PRO_FOLDER}\${LCREPOSITORY}"/apt"
                                     fi
                                     set -e
                                     echo "<*> path to repo is "\${REPOPATH}
@@ -204,14 +208,19 @@ ENDSSH
                             ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                 set -o errexit
                                 set -o xtrace
+                                if [ ${PROBUILD} = YES ]; then
+                                    PRO_FOLDER="private/"
+                                else
+                                    PRO_FOLDER=""
+                                fi
                                 LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                cd /srv/repo-copy
+                                cd /srv/repo-copy/\${PRO_FOLDER}
                                 RSYNC_TRANSFER_OPTS=" -avt --delete --delete-excluded --delete-after --progress"
                                 if [[ ${REVERSE} = true ]]; then
-                                    rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${LCREPOSITORY}/* /srv/repo-copy/\${LCREPOSITORY}/
+                                    rsync \${RSYNC_TRANSFER_OPTS} 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/* /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/
                                 else
-                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${LCREPOSITORY}/
-                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/version 10.30.9.32:/www/repo.percona.com/htdocs/
+                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\${LCREPOSITORY}/* 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}\${LCREPOSITORY}/
+                                    rsync \${RSYNC_TRANSFER_OPTS} --exclude=*.sh --exclude=*.bak /srv/repo-copy/\${PRO_FOLDER}\version 10.30.9.32:/www/repo.percona.com/htdocs/\${PRO_FOLDER}
                                 fi
 ENDSSH
                         else
