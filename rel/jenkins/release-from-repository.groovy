@@ -205,7 +205,7 @@ ENDSSH
     post {
         always {
             script {
-                currentBuild.description = "Repo: ${REPOSITORY}, path to packages: ${PATH_TO_BUILD}"
+                currentBuild.description = "Repo: ${REPOSITORY}/${COMPONENT}, path to packages: ${PATH_TO_BUILD}"
             }
         }
     }
