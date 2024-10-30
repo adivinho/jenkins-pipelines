@@ -156,7 +156,7 @@ ENDSSH
                                             echo "<*> DSC file is "\${DSC_FILE}
                                             for _codename in \${CODENAMES}; do
                                                 echo "<*> CODENAME: "\${_codename}
-                                                echo "repopush --gpg-pass=${PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true"
+                                                echo "repopush --gpg-pass=${SIGN_PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true"
                                                 sleep 5
                                             done
                                         done
