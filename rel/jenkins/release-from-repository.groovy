@@ -44,62 +44,64 @@ pipeline {
                 withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
                     withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                         sh """ 
-                            if [ x"${PATH_TO_BUILD}" = x ]; then
-                                echo "Empty path!"
-                                exit 1
-                            fi
-                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
-                                set -o errexit
-                                set -o xtrace
-                                echo /srv/UPLOAD/${PATH_TO_BUILD}
-                                cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                ALGO=""
-                                REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
-                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                NoDBRepos=("PSMDB" "PDMDB")
-                                for repo in \${NoDBRepos[*]}; do
-                                    if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
-                                        export ALGO="--no-database"
+                            if [ ${SKIP_RPM_PUSH} = false ]; then
+                                if [ x"${PATH_TO_BUILD}" = x ]; then
+                                    echo "Empty path!"
+                                    exit 1
+                                fi
+                                ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                    set -o errexit
+                                    set -o xtrace
+                                    echo /srv/UPLOAD/${PATH_TO_BUILD}
+                                    cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                    ALGO=""
+                                    REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                                    LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+                                    NoDBRepos=("PSMDB" "PDMDB")
+                                    for repo in \${NoDBRepos[*]}; do
+                                        if [[ "${REPOSITORY}" =~ "\${repo}".* ]]; then
+                                            export ALGO="--no-database"
+                                        fi
+                                    done
+                                    if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
+                                        export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                     fi
-                                done
-                                if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
-                                    export PATH="/usr/local/reprepro5/bin:\${PATH}"
-                                fi
-                                if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
-                                    export REPOPATH="yum-repo"
-                                else
-                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
-                                fi
-                                echo \${REPOPATH}
-                                RHVERS=\$(ls -1 binary/redhat | grep -v 6)
-                                # -------------------------------------> source processing
-                                if [[ -d source/redhat ]]; then
-                                    SRCRPM=\$(find source/redhat -name '*.src.rpm')
+                                    if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
+                                       export REPOPATH="yum-repo"
+                                    else
+                                       export REPOPATH="repo-copy/"\${LCREPOSITORY}"/yum"
+                                    fi
+                                    echo \${REPOPATH}
+                                    RHVERS=\$(ls -1 binary/redhat | grep -v 6)
+                                    # -------------------------------------> source processing
+                                    if [[ -d source/redhat ]]; then
+                                        SRCRPM=\$(find source/redhat -name '*.src.rpm')
+                                        for rhel in \${RHVERS}; do
+                                            mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
+                                                rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
+                                            fi
+                                            gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
+                                        done
+                                    fi
+                                    # -------------------------------------> binary processing
+                                    pushd binary
                                     for rhel in \${RHVERS}; do
-                                        mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                        cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                        createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                        if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
-                                            rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
-                                        fi
-                                        gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
+                                        mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS
+                                        for arch in \$(ls -1 redhat/\${rhel}); do
+                                            mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}
+                                            cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/
+                                            createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/
+                                            if [ -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc ]; then
+                                                rm -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc
+                                            fi
+                                            gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml
+                                        done
                                     done
-                                fi
-                                # -------------------------------------> binary processing
-                                pushd binary
-                                for rhel in \${RHVERS}; do
-                                    mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS
-                                    for arch in \$(ls -1 redhat/\${rhel}); do
-                                        mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}
-                                        cp -av redhat/\${rhel}/\${arch}/*.rpm /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/
-                                        createrepo  \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/
-                                        if [ -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc ]; then
-                                            rm -f  /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml.asc
-                                        fi
-                                        gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/RPMS/\${arch}/repodata/repomd.xml
-                                    done
-                                done
-                                date +%s > /srv/repo-copy/version
+                                    date +%s > /srv/repo-copy/version
+                            fi # -- SKIP_RPM_PUSH
 ENDSSH
                         """ 
                     }
@@ -111,73 +113,74 @@ ENDSSH
                 withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
                     withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                         sh """
-                            if [ x"${PATH_TO_BUILD}" = x ]; then
-                                echo "Empty path!"
-                                exit 1
-                            fi
-                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
-                                set -o errexit
-                                set -o xtrace
-                                echo /srv/UPLOAD/${PATH_TO_BUILD}
-                                cd /srv/UPLOAD/${PATH_TO_BUILD}
-                                REPOPUSH_ARGS=""
-                                REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
-                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
-                                if [ ${REMOVE_BEFORE_PUSH} = true ]; then
-                                     if [[ ! ${COMPONENT} == RELEASE ]]; then
-                                         REPOPUSH_ARGS=" --remove-package "
-                                     else
-                                         echo "it is not allowed to remove packages from RELEASE repository"
-                                         exit 1
-                                     fi
+                            if [ ${SKIP_DEB_PUSH} = false ]; then
+                                if [ x"${PATH_TO_BUILD}" = x ]; then
+                                    echo "Empty path!"
+                                    exit 1
                                 fi
-                                if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
-                                    export PATH="/usr/local/reprepro5/bin:\${PATH}"
-                                fi
-                                if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
-                                    export REPOPATH="/srv/apt-repo"
-                                else
-                                    export REPOPATH="/srv/repo-copy/"\${LCREPOSITORY}"/apt"
-                                fi
-                                set -e
-                                echo "<*> path to repo is "\${REPOPATH}
-                                echo "<*> reprepro binary is "\$(which reprepro)
-                                cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
-                                CODENAMES=\$(ls -1)
-                                echo "<*> Distributions are: "\${CODENAMES}
-                                tree
-                                # -------------------------------------> source pushing, it's a bit specific
-                                if [[ ${REMOVE_LOCKFILE} = true ]]; then
-                                    echo "<*> Removing lock file as requested..."
-                                    rm -vf  \${REPOPATH}/db/lockfile
-                                fi
-                                if [[ ${COMPONENT} == RELEASE ]]; then
-                                    export REPOCOMP=main
-                                    if  [ -d /srv/UPLOAD/${PATH_TO_BUILD}/source/debian ]; then
-                                        cd /srv/UPLOAD/${PATH_TO_BUILD}/source/debian
-                                        DSC=\$(find . -type f -name '*.dsc')
-                                        for DSC_FILE in \${DSC}; do
-                                            echo "<*> DSC file is "\${DSC_FILE}
-                                            for _codename in \${CODENAMES}; do
-                                                echo "<*> CODENAME: "\${_codename}
-                                                repopush --gpg-pass=${SIGN_PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true
-                                                sleep 5
+                                ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                                    set -o errexit
+                                    set -o xtrace
+                                    echo /srv/UPLOAD/${PATH_TO_BUILD}
+                                    cd /srv/UPLOAD/${PATH_TO_BUILD}
+                                    REPOPUSH_ARGS=""
+                                    REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                                    LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+                                    if [ ${REMOVE_BEFORE_PUSH} = true ]; then
+                                        if [[ ! ${COMPONENT} == RELEASE ]]; then
+                                            REPOPUSH_ARGS=" --remove-package "
+                                        else
+                                            echo "it is not allowed to remove packages from RELEASE repository"
+                                            exit 1
+                                        fi
+                                    fi
+                                    if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
+                                        export PATH="/usr/local/reprepro5/bin:\${PATH}"
+                                    fi
+                                    if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
+                                       export REPOPATH="/srv/apt-repo"
+                                    else
+                                       export REPOPATH="/srv/repo-copy/"\${LCREPOSITORY}"/apt"
+                                    fi
+                                    set -e
+                                    echo "<*> path to repo is "\${REPOPATH}
+                                    echo "<*> reprepro binary is "\$(which reprepro)
+                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
+                                    CODENAMES=\$(ls -1)
+                                    echo "<*> Distributions are: "\${CODENAMES}
+                                    # -------------------------------------> source pushing, it's a bit specific
+                                    if [[ ${REMOVE_LOCKFILE} = true ]]; then
+                                        echo "<*> Removing lock file as requested..."
+                                        rm -vf  \${REPOPATH}/db/lockfile
+                                    fi
+                                    if [[ ${COMPONENT} == RELEASE ]]; then
+                                        export REPOCOMP=main
+                                        if [ -d /srv/UPLOAD/${PATH_TO_BUILD}/source/debian ]; then
+                                            cd /srv/UPLOAD/${PATH_TO_BUILD}/source/debian
+                                            DSC=\$(find . -type f -name '*.dsc')
+                                            for DSC_FILE in \${DSC}; do
+                                                echo "<*> DSC file is "\${DSC_FILE}
+                                                for _codename in \${CODENAMES}; do
+                                                    echo "<*> CODENAME: "\${_codename}
+                                                    repopush --gpg-pass=${SIGN_PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true
+                                                    sleep 5
+                                                done
                                             done
+                                        fi
+                                    fi
+                                    # -------------------------------------> binary pushing
+                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
+                                    for _codename in \${CODENAMES}; do
+                                        echo "<*> CODENAME: "\${_codename}
+                                        pushd \${_codename}
+                                        DEBS=\$(find . -type f -name '*.*deb' )
+                                        for _deb in \${DEBS}; do
+                                            repopush --gpg-pass=${SIGN_PASSWORD} --package=\${_deb} --repo-path=\${REPOPATH} --component=\${REPOCOMP} --codename=\${_codename} --verbose \${REPOPUSH_ARGS}
                                         done
-                                     fi
-                                fi
-                                # -------------------------------------> binary pushing
-                                cd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
-                                for _codename in \${CODENAMES}; do
-                                    echo "<*> CODENAME: "\${_codename}
-                                    pushd \${_codename}
-                                    DEBS=\$(find . -type f -name '*.*deb' )
-                                    for _deb in \${DEBS}; do
-                                        repopush --gpg-pass=${SIGN_PASSWORD} --package=\${_deb} --repo-path=\${REPOPATH} --component=\${REPOCOMP} --codename=\${_codename} --verbose \${REPOPUSH_ARGS}
+                                        popd
                                     done
-                                    popd
-                                done
-                                date +%s > /srv/repo-copy/version
+                                    date +%s > /srv/repo-copy/version
+                            fi # -- SKIP_DEB_PUSH 
 ENDSSH
                         """
                     }
