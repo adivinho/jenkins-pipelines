@@ -223,7 +223,6 @@ ENDSSH
                        if [ ${SKIP_PACKAGES_SYNC} = false ]; then
                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
                                if [ ${COMPONENT} = RELEASE ]; then
-                                   set -e
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/
                                    PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
                                    RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
@@ -247,6 +246,23 @@ ENDSSH
                                        done
                                        cd ..
                                    done
+                                   # -------------------------------------> create Debian tar bundles
+                                   cd \${RELEASEDIR}/binary/debian
+                                   for _dist in *; do
+                                       cd \${_dist}
+                                       for _arch in *; do
+                                           cd \${_arch}
+                                           # don't create bundle if there's only 1 package inside directory
+                                           NUM_PACKAGES=\$(find . -maxdepth 1 -type f -name '*.deb'|wc -l)
+                                           if [ \${NUM_PACKAGES} -gt 1 ]; then
+                                               tar --owner=0 --group=0 -cf \${RELEASE}-r\${REVISION}-\${_dist}-\${_arch}-bundle.tar *.deb
+                                           fi
+                                           cd ..
+                                       done
+                                       cd ..
+                                   done
+                                   # -------------------------------------> generate sha256sum for sources
+                                   # -------------------------------------> generate sha256sum for binary tarballs
                                fi
 ENDSSH
                        else
@@ -259,9 +275,13 @@ ENDSSH
         stage('Refresh downloads area') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh '''
-                        echo "The step is skipped"
-                    '''
+                    sh """ 
+                       ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                           if [ ${COMPONENT} = RELEASE ]; then
+                               curl -k https://www.percona.com/admin/config/percona/percona_downloads/crawl_directory
+                           fi
+ENDSSH
+                    """
                 }
             }
         }
