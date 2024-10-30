@@ -27,6 +27,10 @@ pipeline {
             choices: 'NO\nYES',
             description: 'PRO build',
             name: 'PROBUILD')
+        booleanParam(name: 'SKIP_RPM_PUSH', defaultValue: false, description: 'Skip push to RPM repository')
+        booleanParam(name: 'SKIP_DEB_PUSH', defaultValue: false, description: 'Skip push to DEB repository')
+        booleanParam(name: 'SKIP_REPO_SYNC', defaultValue: false, description: 'Skip sync repos to production')
+        booleanParam(name: 'SKIP_PACKAGES_SYNC', defaultValue: false, description: 'Skip sync packages to production download')
     }
     options {
         skipDefaultCheckout()
@@ -203,11 +207,34 @@ ENDSSH
         }
         stage('Sync packages to production download') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
-                    sh '''
-                        echo "The step is skipped"
-                    '''
-                }
+               sh """
+                   if [ ${COMPONENT} = RELEASE ]; then
+                         set -e
+                         cd /srv/UPLOAD/${PATH_TO_BUILD}/
+                         PRODUCT=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
+                         RELEASE=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
+                         REVISION=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
+                         RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
+                         rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
+                         mkdir -p \${RELEASEDIR}
+                         cp -av ./* \${RELEASEDIR}
+                         # -------------------------------------> create RedHat tar bundles
+                         cd \${RELEASEDIR}/binary/redhat
+                         for _dist in *; do
+                             cd \${_dist}
+                             for _arch in *; do
+                                 cd \${_arch}
+                                 # don't create bundle if there's only 1 package inside directory
+                                 NUM_PACKAGES=\$(find . -maxdepth 1 -type f -name '*.rpm'|wc -l)
+                                 if [ \${NUM_PACKAGES} -gt 1 ]; then
+                                     tar --owner=0 --group=0 -cf \${RELEASE}-r\${REVISION}-el\${_dist}-\${_arch}-bundle.tar  *.rpm
+                                 fi
+                                 cd ..
+                             done
+                             cd ..
+                         done
+                   fi
+               """
             }
         }
         stage('Refresh downloads area') {
