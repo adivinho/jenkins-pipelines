@@ -211,9 +211,9 @@ ENDSSH
                    if [ ${COMPONENT} = RELEASE ]; then
                          set -e
                          cd /srv/UPLOAD/${PATH_TO_BUILD}/
-                         PRODUCT=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
-                         RELEASE=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
-                         REVISION=$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
+                         PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
+                         RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
+                         REVISION=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
                          RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
                          rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
                          mkdir -p \${RELEASEDIR}
