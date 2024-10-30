@@ -82,13 +82,13 @@ pipeline {
                                     if [[ -d source/redhat ]]; then
                                         SRCRPM=\$(find source/redhat -name '*.src.rpm')
                                         for rhel in \${RHVERS}; do
-                                            echo "mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS"
-                                            #cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                            #createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
-                                            #if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
-                                            #    rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
-                                            #fi
-                                            #gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
+                                            mkdir -p /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            cp -v \${SRCRPM} /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            createrepo \${ALGO:-} --update /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS
+                                            if [[ -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc ]]; then
+                                                rm -f /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml.asc
+                                            fi
+                                            gpg --detach-sign --armor --passphrase $SIGN_PASSWORD /srv/\${REPOPATH}/\${REPOCOMP}/\${rhel}/SRPMS/repodata/repomd.xml
                                         done
                                     fi
                                     exit 1
