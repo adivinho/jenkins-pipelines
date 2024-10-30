@@ -222,6 +222,8 @@ ENDSSH
                    sh """
                        if [ ${SKIP_PACKAGES_SYNC} = false ]; then
                            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${KEY_PATH} ${USER}@repo.ci.percona.com << 'ENDSSH'
+                               set -o errexit
+                               set -o xtrace
                                if [ ${COMPONENT} = RELEASE ]; then
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/
                                    PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
@@ -262,7 +264,27 @@ ENDSSH
                                        cd ..
                                    done
                                    # -------------------------------------> generate sha256sum for sources
+                                   cd \${RELEASEDIR}/source/tarball
+                                   if [ -d source_tarball ]; then
+                                       mv source_tarball/* ./
+                                       rm -rf source_tarball
+                                   fi
+                                   for _tar in *tar.*; do
+                                       # don't do it for symlinks (we have those in percona-agent)
+                                       if [ ! -h \${_tar} ]; then
+                                           sha256sum \${_tar} > \${_tar}.sha256sum
+                                       fi
+                                   done
                                    # -------------------------------------> generate sha256sum for binary tarballs
+                                   if [ -d \${RELEASEDIR}/binary/tarball ]; then 
+                                       cd \${RELEASEDIR}/binary/tarball
+                                       for _tar in *.tar.*; do
+                                          # don't do it for symlinks (we have those in percona-agent)
+                                          if [ ! -h \${_tar} ]; then
+                                              sha256sum \${_tar} > \${_tar}.sha256sum
+                                          fi
+                                       done
+                                   fi
                                fi
 ENDSSH
                        else
