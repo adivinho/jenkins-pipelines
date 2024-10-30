@@ -131,9 +131,9 @@ ENDSSH
                                     export PATH="/usr/local/reprepro5/bin:\${PATH}"
                                 fi
                                 if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
-                                    export REPOPATH="apt-repo"
+                                    export REPOPATH="/srv/apt-repo"
                                 else
-                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/apt"
+                                    export REPOPATH="/srv/repo-copy/"\${LCREPOSITORY}"/apt"
                                 fi
                                 set -e
                                 echo "<*> path to repo is "\${REPOPATH}
@@ -145,7 +145,7 @@ ENDSSH
                                 # -------------------------------------> source pushing, it's a bit specific
                                 if [[ ${REMOVE_LOCKFILE} = true ]]; then
                                     echo "<*> Removing lock file as requested..."
-                                    rm -vf  /srv/\${REPOPATH}/db/lockfile
+                                    rm -vf  \${REPOPATH}/db/lockfile
                                 fi
                                 if [[ ${COMPONENT} == RELEASE ]]; then
                                     export REPOCOMP=main
