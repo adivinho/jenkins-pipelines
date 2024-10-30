@@ -140,13 +140,29 @@ ENDSSH
                                 echo "<*> reprepro binary is "\$(which reprepro)
                                 pushd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
                                 CODENAMES=\$(ls -1)
-                                echo "Distributions are: "\${CODENAMES}
+                                echo "<*> Distributions are: "\${CODENAMES}
                                 tree
                                 # -------------------------------------> source pushing, it's a bit specific
                                 if [[ ${REMOVE_LOCKFILE} = true ]]; then
-                                    echo "Removing lock file as requested..."
+                                    echo "<*> Removing lock file as requested..."
                                     rm -vf  /srv/\${REPOPATH}/db/lockfile
                                 fi
+                                if [[ ${COMPONENT} == RELEASE ]]; then
+                                    export REPOCOMP=main
+                                    if  [ -d /srv/UPLOAD/${PATH_TO_BUILD}/source/debian ]; then
+                                        cd /srv/UPLOAD/${PATH_TO_BUILD}/source/debian
+                                        DSC=\$(find . -type f -name '*.dsc')
+                                        for DSC_FILE in \${DSC}; do
+                                            echo "<*> DSC file is "\${DSC_FILE}
+                                            for _codename in \${CODENAMES}; do
+                                                echo "<*> CODENAME: "\${_codename}
+                                                echo "repopush --gpg-pass=${PASSWORD} --package=\${DSC_FILE} --repo-path=\${REPOPATH} --component=\${REPOCOMP}  --codename=\${_codename} --verbose \${REPOPUSH_ARGS} || true"
+                                                sleep 5
+                                            done
+                                        done
+                                     fi
+                                fi
+
 ENDSSH
                         """
                     }
