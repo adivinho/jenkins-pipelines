@@ -244,6 +244,7 @@ ENDSSH
                                    RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
                                    REVISION=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
                                    RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
+                                   LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                                    rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
                                    mkdir -p \${RELEASEDIR}
                                    cp -av ./* \${RELEASEDIR}
@@ -303,7 +304,12 @@ ENDSSH
                                    cd \${RELEASEDIR}/..
                                    ln -s \${RELEASE} LATEST
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
-                                   rsync -avt -e "ssh -p 2222" --bwlimit=50000 --exclude="*yassl*" --progress \${PRODUCT} jenkins-deploy.jenkins-deploy.web.r.int.percona.com:/data/downloads/
+                                   if [ ${PROBUILD} = YES ]; then
+                                       mkdir -p /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}
+                                       cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}/
+                                   else
+                                       rsync -avt -e "ssh -p 2222" --bwlimit=50000 --exclude="*yassl*" --progress \${PRODUCT} jenkins-deploy.jenkins-deploy.web.r.int.percona.com:/data/downloads/
+                                   fi
                                    rm -fr /srv/UPLOAD/\${PATH_TO_BUILD}/.tmp
                                fi
 ENDSSH
