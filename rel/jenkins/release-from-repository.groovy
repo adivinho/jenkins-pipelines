@@ -67,7 +67,6 @@ pipeline {
                                 fi
                                 echo \${REPOPATH}
                                 RHVERS=\$(ls -1 binary/redhat | grep -v 6)
-                                echo "=====> "\${RHVERS}
                                 # -------------------------------------> source processing
                                 if [[ -d source/redhat ]]; then
                                     SRCRPM=\$(find source/redhat -name '*.src.rpm')
@@ -107,7 +106,6 @@ ENDSSH
                 withCredentials([string(credentialsId: 'SIGN_PASSWORD', variable: 'SIGN_PASSWORD')]) {
                     withCredentials([sshUserPrivateKey(credentialsId: 'repo.ci.percona.com', keyFileVariable: 'KEY_PATH', usernameVariable: 'USER')]) {
                         sh """
-                            REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
                             if [ x"${PATH_TO_BUILD}" = x ]; then
                                 echo "Empty path!"
                                 exit 1
@@ -119,9 +117,28 @@ ENDSSH
                                 echo /srv/UPLOAD/${PATH_TO_BUILD}
                                 cd /srv/UPLOAD/${PATH_TO_BUILD}
                                 REPOPUSH_ARGS=""
+                                REPOCOMP=\$(echo "${COMPONENT}" | tr '[:upper:]' '[:lower:]')
+                                LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                                 if [ ${REMOVE_BEFORE_PUSH} = true ]; then
-                                     REPOPUSH_ARGS=" --remove-package "
+                                     if [[ ! ${COMPONENT} == RELEASE ]]; then
+                                         REPOPUSH_ARGS=" --remove-package "
+                                     else
+                                         echo "it is not allowed to remove packages from RELEASE repository"
+                                         exit 1
+                                     fi
                                 fi
+                                if [[ ! "${REPOSITORY}" == "PERCONA" ]]; then
+                                    export PATH="/usr/local/reprepro5/bin:\${PATH}"
+                                fi
+                                if [[ "${REPOSITORY}" == "DEVELOPMENT" ]]; then
+                                    export REPOPATH="apt-repo"
+                                else
+                                    export REPOPATH="repo-copy/"\${LCREPOSITORY}"/apt"
+                                fi
+                                set -e
+                                echo "<*> path to repo is "\${REPOPATH}
+                                echo "<*> reprepro binary is "\$(which reprepro)
+                                pushd /srv/UPLOAD/${PATH_TO_BUILD}/binary/debian
                                 tree
 ENDSSH
                         """
