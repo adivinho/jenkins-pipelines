@@ -53,4 +53,11 @@ pipeline {
         }
 
     }
+    post {
+        always {
+            script {
+                currentBuild.description = "Repo: ${REPO_NAME}"
+            }
+        }
+    }
 }
