@@ -351,7 +351,7 @@ pipeline {
         stage('Sign packages') {
             steps {
                 signRPM()
-//                signDEB()
+                signDEB()
             }
         }
         stage('Push to public repository') {
