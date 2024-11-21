@@ -279,8 +279,8 @@ ENDSSH
                                    ln -s \${RELEASE} LATEST
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
                                    if [ ${PROBUILD} = YES ]; then
-                                       mkdir -p /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${PRODUCT}-\${RELEASE}
-                                       cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${PRODUCT}-\${RELEASE}/
+                                       mkdir -p /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}
+                                       cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}/
                                    else
                                        if [ ${COPY_TELEMETRY} = YES ]; then
                                            touch \${RELEASEDIR}/binary/telemetry-enhanced.json
@@ -291,8 +291,8 @@ ENDSSH
                                else
                                    if [ ${PROBUILD} = YES ]; then
                                        echo "Tarballs are uploaded by a build job into qa-test folder."
-                                       #mkdir -p /srv/repo-copy/private/qa-test/\${LCREPOSITORY}/\${RELEASE}
-                                       #cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/qa-test/\${LCREPOSITORY}/\${RELEASE}/
+                                       #mkdir -p /srv/repo-copy/private/qa-test/\${RELEASE}
+                                       #cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/qa-test/\${RELEASE}/
                                    fi
                                fi
 ENDSSH
