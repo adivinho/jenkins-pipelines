@@ -279,8 +279,8 @@ ENDSSH
                                    ln -s \${RELEASE} LATEST
                                    cd /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
                                    if [ ${PROBUILD} = YES ]; then
-                                       mkdir -p /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}
-                                       cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${RELEASE}/
+                                       mkdir -p /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${PRODUCT}-\${RELEASE}
+                                       cp \${RELEASEDIR}/binary/tarball/* /srv/repo-copy/private/\${LCREPOSITORY}/tarballs/\${PRODUCT}-\${RELEASE}/
                                    else
                                        if [ ${COPY_TELEMETRY} = YES ]; then
                                            touch \${RELEASEDIR}/binary/telemetry-enhanced.json
