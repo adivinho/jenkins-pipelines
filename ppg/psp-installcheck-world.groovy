@@ -15,9 +15,14 @@ pipeline {
             choices: ppgOperatingSystemsALL()
         )
         string(
-            defaultValue: 'ppg-17.0',
-            description: 'Server PG version for test, including major and minor version, e.g ppg-16.2, ppg-15.5',
+            defaultValue: '17.4',
+            description: 'Server PG version for test, including major and minor version, e.g 16.2, 15.5',
             name: 'VERSION'
+        )
+        string(
+            defaultValue: 'ppg-17.4.1',
+            description: 'Server PG version for test, including major and minor version, e.g 17.4.1',
+            name: 'PERCONA_SERVER_VERSION'
         )
         string(
             defaultValue: 'https://github.com/percona/postgres',
@@ -38,31 +43,10 @@ pipeline {
             name: 'TESTSUITE',
             description: 'Testsuite to run',
             choices: [
-                'installcheck',
-                'installcheck-world'
+                'server-check-world-without-tde',
+                'server-installcheck-world-with-tde',
+                'tde-installcheck-only'
             ]
-        )
-        choice(
-            name: 'ACCESS_METHOD',
-            description: 'Server access method to use',
-            choices: [
-                'heap',
-                'tde_heap',
-                'tde_heap_basic'
-            ]
-        )
-        booleanParam(
-            name: 'WITH_TDE_HEAP',
-            description: "Do you want TDE_HEAP build and test as part of this run?"
-        )
-        booleanParam(
-            name: 'CHANGE_TDE_BRANCH',
-            description: "Do you want to change TDE branch to other than default one given in PSP? It will only work if WITH_TDE_HEAP option is enabled."
-        )
-        string(
-            defaultValue: 'main',
-            description: 'pg_tde branch to use. It will only work if both options, WITH_TDE_HEAP and CHANGE_TDE_BRANCH, are enabled.',
-            name: 'TDE_BRANCH'
         )
         string(
             defaultValue: 'yes',
