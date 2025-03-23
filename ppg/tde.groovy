@@ -24,23 +24,19 @@ pipeline {
             ]
         )
         string(
-            defaultValue: 'https://github.com/Percona-Lab/pg_tde.git',
-            description: 'TDE repo that we want to test, we could also use forked developer repo here.',
-            name: 'TDE_REPO'
+            defaultValue: 'https://github.com/percona/postgres',
+            description: 'PSP repo that we want to test, we could also use forked developer repo here.',
+            name: 'PSP_REPO'
         )
         string(
-            defaultValue: 'main',
-            description: 'TDE repo version/branch/tag to use; e.g main, 2.0.5',
-            name: 'TDE_BRANCH'
+            defaultValue: 'release-17.4',
+            description: 'PSP repo version/branch/tag to use; e.g main, TDE_REL_17_STABLE',
+            name: 'PSP_BRANCH'
         )
         string(
-            defaultValue: 'ppg-17.0',
+            defaultValue: 'ppg-17.4',
             description: 'Server PG version for test, including major and minor version, e.g ppg-16.2, ppg-15.5',
             name: 'VERSION'
-        )
-        booleanParam(
-            name: 'TDE_PACKAGE_INSTALL',
-            description: "Select if want to install TDE using native package from repo.percona.com, one shipped with VERSION above."
         )
         string(
             defaultValue: 'main',
