@@ -29,15 +29,6 @@ pipeline {
                 'release'
             ]
         )
-        choice(
-            name: 'REPO',
-            description: 'Packages Repo for testing',
-            choices: [
-                'testing',
-                'experimental',
-                'release'
-            ]
-        )
         string(
             defaultValue: 'https://github.com/percona/postgres',
             description: 'PSP repo that we want to test, we could also use forked developer repo here.',
