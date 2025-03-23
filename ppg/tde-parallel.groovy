@@ -6,11 +6,11 @@ library changelog: false, identifier: "lib@master", retriever: modernSCM([
 def sendSlackNotification(psp_repo, psp_branch, version, package_repo, major_repo)
 {
  if ( currentBuild.result == "SUCCESS" ) {
-    buildSummary = "Job: ${env.JOB_NAME}\nTDE_Repo: ${psp_repo}\nTDE_Branch: ${psp_branch}\nVersion: ${version}\nPackage_Repo: ${package_repo}\nMajor_Repo: ${major_repo}\nStatus: *SUCCESS*\nBuild Report: ${env.BUILD_URL}"
+    buildSummary = "Job: ${env.JOB_NAME}\nPSP_Repo: ${psp_repo}\nPSP_Branch: ${psp_branch}\nVersion: ${version}\nPackage_Repo: ${package_repo}\nMajor_Repo: ${major_repo}\nStatus: *SUCCESS*\nBuild Report: ${env.BUILD_URL}"
   slackSend color : "good", message: "${buildSummary}", channel: '#postgresql-test'
  }
  else {
-  buildSummary = "Job: ${env.JOB_NAME}\nTDE_Repo: ${psp_repo}\nTDE_Branch: ${psp_branch}\nVersion: ${version}\nPackage_Repo: ${package_repo}\nMajor_Repo: ${major_repo}\nStatus: *FAILURE*\nBuild number: ${env.BUILD_NUMBER}\nBuild Report :${env.BUILD_URL}"
+  buildSummary = "Job: ${env.JOB_NAME}\nPSP_Repo: ${psp_repo}\nPSP_Branch: ${psp_branch}\nVersion: ${version}\nPackage_Repo: ${package_repo}\nMajor_Repo: ${major_repo}\nStatus: *FAILURE*\nBuild number: ${env.BUILD_NUMBER}\nBuild Report :${env.BUILD_URL}"
   slackSend color : "danger", message: "${buildSummary}", channel: '#postgresql-test'
  }
 }
