@@ -98,6 +98,7 @@ pipeline {
                         uploadRPMfromAWS("srpm/", AWS_STASH_PATH)
                     }
                 }
+/*
                 stage('Build PXB generic source deb') {
                     agent {
                         label 'docker'
@@ -111,6 +112,7 @@ pipeline {
                         uploadDEBfromAWS("source_deb/", AWS_STASH_PATH)
                     }
                 }
+*/
             }  //parallel
         } // stage
         stage('Build PXB RPMs/DEBs/Binary tarballs') {
