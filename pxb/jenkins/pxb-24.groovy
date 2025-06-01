@@ -115,6 +115,20 @@ pipeline {
         } // stage
         stage('Build PXB RPMs/DEBs/Binary tarballs') {
             parallel {
+                stage('Centos 7') {
+                    agent {
+                        label 'docker'
+                    }
+                    steps {
+                        cleanUpWS()
+                        popArtifactFolder("srpm/", AWS_STASH_PATH)
+                        buildStage("centos:7", "--build_rpm=1")
+
+                        pushArtifactFolder("rpm/", AWS_STASH_PATH)
+                        uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
+                    }
+                }
+/*
                 stage('Oracle Linux 8') {
                     agent {
                         label 'docker'
@@ -141,7 +155,7 @@ pipeline {
                         uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                     }
                 } 
-/*                stage('Amazon Linux 2023') {
+                stage('Amazon Linux 2023') {
                     agent {
                         label 'docker-32gb'
                     }
@@ -153,7 +167,7 @@ pipeline {
                         pushArtifactFolder("rpm/", AWS_STASH_PATH)
                         uploadRPMfromAWS("rpm/", AWS_STASH_PATH)
                     }
-                }*/
+                }
                 stage('Ubuntu Bionic(18.04)') {
                     agent {
                         label 'docker'
@@ -258,6 +272,7 @@ pipeline {
                         uploadTarballfromAWS("test/tarball/", AWS_STASH_PATH, 'binary')
                     }
                 }
+*/
 
             }
         }
@@ -265,7 +280,7 @@ pipeline {
         stage('Sign packages') {
             steps {
                 signRPM()
-                signDEB()
+            //    signDEB()
             }
         }
         stage('Push to public repository') {
