@@ -421,11 +421,11 @@ void setInventories(String param_test_type){
                     KEYPATH_COMMON="/home/admin/.cache/molecule/${product_to_test}-common-${param_test_type}/${params.node_to_test}/ssh_key-us-west-1"
 
 
-                    if(("${params.node_to_test}" == "ubuntu-noble") || ("${params.node_to_test}" == "ubuntu-focal") || ("${params.node_to_test}" == "ubuntu-jammy") || ("${params.node_to_test}" == "ubuntu-noble-arm") || ("${params.node_to_test}" == "ubuntu-jammy-arm")){
-                        SSH_USER="ubuntu"            
-                    }else if(("${params.node_to_test}" == "debian-11") ||("${params.node_to_test}" == "debian-12") || ("${params.node_to_test}" == "debian-11-arm") || ("${params.node_to_test}" == "debian-12-arm") || ("${params.node_to_test}" == "debian-10")){
+                    if(("${params.node_to_test}" == "ubuntu-noble") || ("${params.node_to_test}" == "ubuntu-focal") || ("${params.node_to_test}" == "ubuntu-jammy") || ("${params.node_to_test}" == "ubuntu-noble-arm") || ("${params.node_to_test}" == "ubuntu-jammy-arm") || ("${params.node_to_test}" == "ubuntu-focal-arm") || ("${params.node_to_test}" == "ubuntu-bionic")){
+                        SSH_USER="ubuntu"
+                    }else if(("${params.node_to_test}" == "debian-11") ||("${params.node_to_test}" == "debian-12") || ("${params.node_to_test}" == "debian-11-arm") || ("${params.node_to_test}" == "debian-12-arm") || ("${params.node_to_test}" == "debian-10") || ("${params.node_to_test}" == "debian-13") || ("${params.node_to_test}" == "debian-13-arm")){
                         SSH_USER="admin"
-                    }else if(("${params.node_to_test}" == "amazon-linux-2023-arm") || ("${params.node_to_test}" == "amazon-linux-2023") || ("${params.node_to_test}" == "ol-8") || ("${params.node_to_test}" == "ol-9") || ("${params.node_to_test}" == "min-amazon-2") || ("${params.node_to_test}" == "rhel-8") || ("${params.node_to_test}" == "rhel-9") || ("${params.node_to_test}" == "rhel-8-arm") || ("${params.node_to_test}" == "rhel-9-arm")){
+                    }else if(("${params.node_to_test}" == "amazon-linux-2023-arm") || ("${params.node_to_test}" == "amazon-linux-2023") || ("${params.node_to_test}" == "ol-8") || ("${params.node_to_test}" == "ol-9") || ("${params.node_to_test}" == "min-amazon-2") || ("${params.node_to_test}" == "rhel-8") || ("${params.node_to_test}" == "rhel-9") || ("${params.node_to_test}" == "rhel-8-arm") || ("${params.node_to_test}" == "rhel-9-arm") || ("${params.node_to_test}" == "rhel-10") || ("${params.node_to_test}" == "rhel-10-arm")){
                         SSH_USER="ec2-user"
                     }else if(("${params.node_to_test}" == "centos-7")){
                         SSH_USER="centos"
