@@ -31,7 +31,9 @@ def triggerNightlyGhaRc(String shortName, Map cfg = [:]) {
         SERVER_TYPE       : 'docker',
         DOCKER_VERSION    : env.PMM_SERVER_IMAGE,
         AMI_ID            : params.AMI_ID.trim(),
+        AMI_ARCH          : 'amd64',
         CLIENT_VERSION    : 'pmm3-rc',
+        SERVER_ARCH       : 'amd64',
         ADMIN_PASSWORD    : 'pmm3admin!',
         HELM_CHART_BRANCH : 'main',
         OPENSHIFT_VERSION : 'latest',
@@ -77,6 +79,11 @@ pipeline {
         string(
             description: 'RC AMI ID from pmm3-ami build',
             name: 'AMI_ID',
+            trim: true)
+        string(
+            defaultValue: '',
+            description: 'RC arm64 AMI ID from pmm3-ami build. Leave empty to skip the arm64 AMI lane.',
+            name: 'AMI_ID_ARM64',
             trim: true)
     }
 
@@ -356,6 +363,7 @@ pipeline {
                                         string(name: 'GIT_BRANCH',      value: 'main'),
                                         string(name: 'GIT_COMMIT_HASH', value: ''),
                                         string(name: 'DOCKER_VERSION',  value: env.PMM_SERVER_IMAGE),
+                                        string(name: 'SERVER_ARCH',     value: 'arm64'),
                                         string(name: 'PMM_VERSION',     value: params.RC_VERSION.trim()),
                                         string(name: 'INSTALL_REPO',    value: 'testing'),
                                         string(name: 'TARBALL',         value: params.PMM_CLIENT_TARBALL_ARM64.trim()),
@@ -400,6 +408,32 @@ pipeline {
                                         booleanParam(name: 'GENERATE_DASHBOARD_SCREENSHOTS', value: true),
                                         string(name: 'SCREENSHOTS_SLACK_TARGET',       value: env.SLACK_RC_SCREENSHOTS_TARGET),
                                     ]
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Lane 4 (arm64)') {
+                    stages {
+                        stage('nightly (AMI, arm64)') {
+                            when { expression { (params.AMI_ID_ARM64 ?: '').trim() != '' } }
+                            steps {
+                                script {
+                                    triggerNightlyGhaRc('pmm3-ui-tests-nightly-gha (ami, arm64)', [
+                                        SERVER_TYPE: 'ami',
+                                        AMI_ID     : params.AMI_ID_ARM64.trim(),
+                                        AMI_ARCH   : 'arm64',
+                                    ])
+                                }
+                            }
+                        }
+                        stage('nightly (Docker, arm64 server)') {
+                            steps {
+                                script {
+                                    triggerNightlyGhaRc('pmm3-ui-tests-nightly-gha (docker, arm64)', [
+                                        SERVER_ARCH: 'arm64',
+                                    ])
                                 }
                             }
                         }

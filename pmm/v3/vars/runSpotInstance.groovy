@@ -1,5 +1,5 @@
-def call(String INSTANCE_TYPE, boolean USE_ONDEMAND = false) {
-  withEnv(["INSTANCE_TYPE=${INSTANCE_TYPE}", "USE_ONDEMAND=${USE_ONDEMAND}"]) {
+def call(String INSTANCE_TYPE, boolean USE_ONDEMAND = false, String ARCH = 'x86_64') {
+  withEnv(["INSTANCE_TYPE=${INSTANCE_TYPE}", "USE_ONDEMAND=${USE_ONDEMAND}", "ARCH=${ARCH}"]) {
     withCredentials([aws(credentialsId: 'pmm-staging-slave')]) {
         sh '''
             set -o xtrace
@@ -8,7 +8,7 @@ def call(String INSTANCE_TYPE, boolean USE_ONDEMAND = false) {
             IMAGE_ID=$(
                 aws ec2 describe-images \
                     --owners self \
-                    --filters "Name=tag:iit-billing-tag,Values=pmm-worker-3" "Name=architecture,Values=x86_64" \
+                    --filters "Name=tag:iit-billing-tag,Values=pmm-worker-3" "Name=architecture,Values=${ARCH}" \
                     --region us-east-2 \
                     --output text \
                     --query 'Images[0].ImageId'

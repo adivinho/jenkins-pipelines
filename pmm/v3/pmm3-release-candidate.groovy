@@ -141,6 +141,11 @@ pipeline {
             description: 'Slack channel to send notifications to',
             name: 'NOTIFICATION_CHANNEL'
         )
+        booleanParam(
+            defaultValue: true,
+            description: 'Also build the arm64 AMI. Each run registers a private AMI and two EBS snapshots.',
+            name: 'BUILD_ARM64_AMI'
+        )
     }
     options {
         skipStagesAfterUnstable()
@@ -300,10 +305,22 @@ pipeline {
                     def pmmAMI = build job: 'pmm3-ami', parameters: [
                         string(name: 'PMM_BRANCH', value: "pmm-${VERSION}"),
                         string(name: 'PMM_SERVER_IMAGE', value: "docker.io/${PMM_SERVER_IMAGE}"),
+                        string(name: 'AMI_ARCH', value: 'amd64'),
                         string(name: 'RELEASE_CANDIDATE', value: "yes"),
                         booleanParam(name: 'USE_ONDEMAND', value: true)
                     ]
                     env.AMI_ID = pmmAMI.buildVariables.AMI_ID
+
+                    if (params.BUILD_ARM64_AMI) {
+                        def pmmAMIArm64 = build job: 'pmm3-ami', parameters: [
+                            string(name: 'PMM_BRANCH', value: "pmm-${VERSION}"),
+                            string(name: 'PMM_SERVER_IMAGE', value: "docker.io/${PMM_SERVER_IMAGE}"),
+                            string(name: 'AMI_ARCH', value: 'arm64'),
+                            string(name: 'RELEASE_CANDIDATE', value: "yes"),
+                            booleanParam(name: 'USE_ONDEMAND', value: true)
+                        ]
+                        env.AMI_ID_ARM64 = pmmAMIArm64.buildVariables.AMI_ID
+                    }
                 }
             }
         }
@@ -322,15 +339,14 @@ pipeline {
                     env.SCAN_REPORT_URL = ""
                     if (imageScan.result == 'SUCCESS') {
                         // Copy Trivy reports for both server and client
-                        copyArtifacts filter: '*-report.*', projectName: 'pmm3-image-scanning'
+                        copyArtifacts filter: 'trivy-*-report-*.*', projectName: 'pmm3-image-scanning'
                         sh '''
-                            mv trivy-server-report.txt trivy-server-report-${VERSION}-rc.txt
-                            mv trivy-server-report.html trivy-server-report-${VERSION}-rc.html
-
-                            mv trivy-client-report.txt trivy-client-report-${VERSION}-rc.txt
-                            mv trivy-client-report.html trivy-client-report-${VERSION}-rc.html
+                            for report in trivy-*-report-*.*; do
+                                [ -e "${report}" ] || continue
+                                mv "${report}" "${report%.*}-${VERSION}-rc.${report##*.}"
+                            done
                         '''
-                        archiveArtifacts artifacts: "*-report-${VERSION}-rc.*"
+                        archiveArtifacts artifacts: "trivy-*-report-*-${VERSION}-rc.*"
                         env.SCAN_REPORT_URL = "${BUILD_URL}artifact/"
                     }
                 }
@@ -350,6 +366,7 @@ pipeline {
                                 string(name: 'PMM_CLIENT_TARBALL_OL8', value: env.TARBALL_AMD64_DYNAMIC_OL8_URL.trim()),
                                 string(name: 'PMM_CLIENT_TARBALL_OL9', value: env.TARBALL_AMD64_DYNAMIC_OL9_URL.trim()),
                                 string(name: 'AMI_ID', value: env.AMI_ID.trim()),
+                                string(name: 'AMI_ID_ARM64', value: (env.AMI_ID_ARM64 ?: '').trim()),
                             ]
                         echo "[rc-tests] Release Candidate testing queued for ${env.VERSION}."
                     } catch (Throwable e) {
@@ -368,6 +385,7 @@ pipeline {
 Server: perconalab/pmm-server:${VERSION}-rc
 Client: perconalab/pmm-client:${VERSION}-rc
 AMI: ${env.AMI_ID}
+AMI ARM64: ${env.AMI_ID_ARM64 ?: 'not built'}
 Tarball AMD64: ${env.TARBALL_AMD64_URL}
 Tarball ARM64: ${env.TARBALL_ARM64_URL}
 Tarball AMD64 (GSSAPI) OL8: ${env.TARBALL_AMD64_DYNAMIC_OL8_URL}

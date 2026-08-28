@@ -15,6 +15,10 @@ pipeline {
             description: 'AMI Image version',
             name: 'AMI_ID')
         choice(
+            choices: ['amd64', 'arm64'],
+            description: 'CPU architecture of the AMI being started',
+            name: 'AMI_ARCH')
+        choice(
             choices: '1\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16',
             description: 'Stop the instance after, days ("0" value disables autostop and recreates instance in case of AWS failure)',
             name: 'DAYS')
@@ -119,9 +123,15 @@ pipeline {
                         # tagged subnet with a ladder of instance types. The primary subnet's
                         # AZ (us-east-1e) is a legacy AZ without t3/m5, so the ladder only
                         # uses previous-generation types that exist in every us-east-1 AZ.
+                        if [ "$AMI_ARCH" = "arm64" ]; then
+                            INSTANCE_TYPES="t4g.large m6g.large t4g.xlarge"
+                        else
+                            INSTANCE_TYPES="t2.large m4.large t2.xlarge"
+                        fi
+
                         INSTANCE_ID=""
                         for SUBNET_ID in $SUBNET_IDS; do
-                            for INSTANCE_TYPE in t2.large m4.large t2.xlarge; do
+                            for INSTANCE_TYPE in $INSTANCE_TYPES; do
                                 echo "Attempting launch: $INSTANCE_TYPE in $SUBNET_ID"
                                 if INSTANCE_ID=$(
                                     aws ec2 run-instances \
@@ -204,7 +214,7 @@ pipeline {
 
                             sudo dnf -y install podman-docker
 
-                            curl -L -s https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 | sudo tee /usr/bin/docker-compose > /dev/null
+                            curl -L -s https://github.com/docker/compose/releases/latest/download/docker-compose-linux-\$(uname -m) | sudo tee /usr/bin/docker-compose > /dev/null
                             sudo chmod +x /usr/bin/docker-compose
                             sudo mkdir -p /srv/pmm-qa || :
                             pushd /srv/pmm-qa

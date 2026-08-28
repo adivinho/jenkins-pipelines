@@ -1,7 +1,8 @@
-void runAMIStagingStart(AMI_ID, SSH_KEY) {
+void runAMIStagingStart(AMI_ID, SSH_KEY, AMI_ARCH) {
     amiStagingJob = build job: 'pmm3-ami-staging-start', parameters: [
         string(name: 'AMI_ID', value: AMI_ID),
-        string(name: 'SSH_KEY', value: SSH_KEY)
+        string(name: 'SSH_KEY', value: SSH_KEY),
+        string(name: 'AMI_ARCH', value: AMI_ARCH)
     ]
     env.AMI_INSTANCE_ID = amiStagingJob.buildVariables.INSTANCE_ID
     env.AMI_INSTANCE_IP = amiStagingJob.buildVariables.PUBLIC_IP
@@ -39,6 +40,10 @@ pipeline {
             defaultValue: '',
             description: 'AMI Image version',
             name: 'AMI_ID')
+        choice(
+            choices: ['amd64', 'arm64'],
+            description: 'CPU architecture of the AMI under test',
+            name: 'AMI_ARCH')
     }
     options {
         buildDiscarder(logRotator(numToKeepStr: '30'))
@@ -67,7 +72,7 @@ pipeline {
         }
         stage('Run PMM3 AMI Instance') {
             steps {
-                runAMIStagingStart(params.AMI_ID, params.SSH_KEY)
+                runAMIStagingStart(params.AMI_ID, params.SSH_KEY, params.AMI_ARCH)
             }
         }
     }

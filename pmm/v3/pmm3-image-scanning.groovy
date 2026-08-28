@@ -7,6 +7,25 @@ library changelog: false, identifier: 'lib@master', retriever: modernSCM([
     remote: 'https://github.com/Percona-Lab/jenkins-pipelines.git'
 ]) _
 
+void scanImage(String component, String image) {
+    sh """
+        manifest=\$(docker manifest inspect ${image}) || {
+            echo "ERROR: cannot read the manifest of ${image}"
+            exit 1
+        }
+
+        for platform in amd64 arm64; do
+            if ! echo "\${manifest}" | grep -q '"architecture": "'\${platform}'"'; then
+                echo "${image} has no \${platform} layer, skipping"
+                continue
+            fi
+            trivy image --platform linux/\${platform} --severity HIGH,CRITICAL --format table -o trivy-${component}-report-\${platform}.txt ${image}
+            trivy image --platform linux/\${platform} --severity HIGH,CRITICAL --format template --template "@html.tpl" -o trivy-${component}-report-\${platform}.html ${image}
+        done
+    """
+    archiveArtifacts artifacts: "trivy-${component}-report-*.*", allowEmptyArchive: true
+}
+
 pipeline {
     agent {
         label params.USE_ONDEMAND ? 'agent-amd64-ondemand' : 'agent-amd64'
@@ -37,22 +56,14 @@ pipeline {
         stage('Scan PMM Server') {
             steps {
                 script {
-                    sh """
-                        trivy image --severity HIGH,CRITICAL --format table -o trivy-server-report.txt ${params.PMM_SERVER_IMAGE}
-                        trivy image --severity HIGH,CRITICAL --format template --template "@html.tpl" -o trivy-server-report.html ${params.PMM_SERVER_IMAGE}
-                    """
-                    archiveArtifacts artifacts: 'trivy-server-report.*', allowEmptyArchive: true
+                    scanImage('server', params.PMM_SERVER_IMAGE)
                 }
             }
         }
         stage('Scan PMM Client') {
             steps {
                 script {
-                    sh """
-                        trivy image --severity HIGH,CRITICAL --format table -o trivy-client-report.txt ${params.PMM_CLIENT_IMAGE}
-                        trivy image --severity HIGH,CRITICAL --format template --template "@html.tpl" -o trivy-client-report.html ${params.PMM_CLIENT_IMAGE}
-                    """
-                    archiveArtifacts artifacts: 'trivy-client-report.*', allowEmptyArchive: true
+                    scanImage('client', params.PMM_CLIENT_IMAGE)
                 }
             }
         }

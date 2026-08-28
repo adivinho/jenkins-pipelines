@@ -5,9 +5,10 @@ library changelog: false, identifier: 'lib@master', retriever: modernSCM([
 
 def defaultAmiId = pmmVersion('v3-ami').values()[-1]
 
-void runStagingServer(String DOCKER_VERSION, CLIENT_VERSION, CLIENTS, CLIENT_INSTANCE, SERVER_IP, PMM_QA_GIT_BRANCH, ADMIN_PASSWORD = "admin") {
+void runStagingServer(String DOCKER_VERSION, CLIENT_VERSION, CLIENTS, CLIENT_INSTANCE, SERVER_IP, PMM_QA_GIT_BRANCH, ADMIN_PASSWORD = "admin", SERVER_ARCH = "amd64") {
     stagingJob = build job: 'pmm3-aws-staging-start', parameters: [
         string(name: 'DOCKER_VERSION', value: DOCKER_VERSION),
+        string(name: 'SERVER_ARCH', value: SERVER_ARCH),
         string(name: 'CLIENT_VERSION', value: CLIENT_VERSION),
         string(name: 'CLIENTS', value: CLIENTS),
         string(name: 'CLIENT_INSTANCE', value: CLIENT_INSTANCE),
@@ -84,9 +85,10 @@ def runHAClusterCreate(String K8S_VERSION, DOCKER_VERSION, HELM_CHART_BRANCH, AD
     env.PMM_UI_URL = "${pmmAddress}/"
 }
 
-void runAMIStagingStart(String AMI_ID) {
+void runAMIStagingStart(String AMI_ID, String AMI_ARCH = 'amd64') {
     amiStagingJob = build job: 'pmm3-ami-staging-start', parameters: [
-        string(name: 'AMI_ID', value: AMI_ID)
+        string(name: 'AMI_ID', value: AMI_ID),
+        string(name: 'AMI_ARCH', value: AMI_ARCH)
     ]
     env.AMI_INSTANCE_ID = amiStagingJob.buildVariables.INSTANCE_ID
     env.AMI_INSTANCE_IP = amiStagingJob.buildVariables.PUBLIC_IP
@@ -120,6 +122,14 @@ pipeline {
             defaultValue: 'perconalab/pmm-server:3-dev-latest',
             description: 'PMM Server docker container version (image-name:version-tag)',
             name: 'DOCKER_VERSION')
+        choice(
+            choices: ['amd64', 'arm64'],
+            description: '[docker only] CPU architecture of the VM the server runs on.',
+            name: 'SERVER_ARCH')
+        choice(
+            choices: ['amd64', 'arm64'],
+            description: '[AMI only] CPU architecture of the AMI given in AMI_ID.',
+            name: 'AMI_ARCH')
         string(
             defaultValue: defaultAmiId,
             description: '[AMI only] AWS AMI ID (e.g., ami-0669b163befffb6c3).',
@@ -157,7 +167,7 @@ pipeline {
         stage('Prepare') {
             steps {
                 script {
-                    currentBuild.description = "[GHA] ${env.SERVER_TYPE} Server: ${env.DOCKER_VERSION}. Client: ${env.CLIENT_VERSION}"
+                    currentBuild.description = "[GHA] ${env.SERVER_TYPE}/${env.SERVER_ARCH} Server: ${env.DOCKER_VERSION}. Client: ${env.CLIENT_VERSION}"
                 }
                 deleteDir()
                 git poll: false, branch: PMM_QA_GIT_BRANCH, url: 'https://github.com/percona/pmm-qa.git'
@@ -171,7 +181,7 @@ pipeline {
                         expression { env.SERVER_TYPE == "docker" }
                     }
                     steps {
-                        runStagingServer(DOCKER_VERSION, CLIENT_VERSION, '--help', 'no', '127.0.0.1', PMM_QA_GIT_BRANCH, ADMIN_PASSWORD)
+                        runStagingServer(DOCKER_VERSION, CLIENT_VERSION, '--help', 'no', '127.0.0.1', PMM_QA_GIT_BRANCH, ADMIN_PASSWORD, SERVER_ARCH)
                     }
                 }
                 stage('Setup AMI PMM Server Instance') {
@@ -179,7 +189,7 @@ pipeline {
                         expression { env.SERVER_TYPE == "ami" }
                     }
                     steps {
-                        runAMIStagingStart(AMI_ID)
+                        runAMIStagingStart(AMI_ID, AMI_ARCH)
                     }
                 }
                 stage('Setup Helm PMM Server Instance') {
