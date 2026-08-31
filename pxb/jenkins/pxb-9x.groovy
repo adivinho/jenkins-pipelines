@@ -347,10 +347,8 @@ pipeline {
                                 buildStage("oraclelinux:9", "--build_rpm=1")
                             }
 
-                            if (env.EXPERIMENTALMODE == 'NO') { 
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            }
+                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
                         }
                     }
                 } 
@@ -368,10 +366,8 @@ pipeline {
                                 buildStage("oraclelinux:9", "--build_rpm=1")
                             }
 
-                            if (env.EXPERIMENTALMODE == 'NO') {
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            }
+                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
                         }
                     }
                 }
