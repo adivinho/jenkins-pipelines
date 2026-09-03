@@ -63,7 +63,7 @@ pipeline {
             description: 'URL for mysql-shell repository',
             name: 'SHELL_REPO')
         string(
-            defaultValue: '8.0.33',
+            defaultValue: '8.4.12',
             description: 'Tag/Branch for mysql-shell repository',
             name: 'SHELL_BRANCH')  
         string(
@@ -71,7 +71,7 @@ pipeline {
             description: 'URL for percona-server repository',
             name: 'PS_REPO')
         string(
-            defaultValue: '8.0.33',
+            defaultValue: 'release-8.4.12-1',
             description: 'Tag/Branch for percona-server repository',
             name: 'PS_BRANCH')   
         string(
