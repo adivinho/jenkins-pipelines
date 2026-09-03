@@ -7,6 +7,9 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
     withCredentials([string(credentialsId: 'GITHUB_API_TOKEN', variable: 'TOKEN')]) {
         sh """
             set -o xtrace
+            if [ -d "test" ]; then
+                rm -rf test
+            fi
             mkdir test
             wget \$(echo ${BUILD_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BUILD_BRANCH}/mysql-shell_builder.sh -O mysql-shell_builder.sh
             if [ "${USE_GIT_CREDENTIAL}" = "YES" ]; then
