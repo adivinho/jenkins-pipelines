@@ -26,6 +26,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
           else
               wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/storage/innobase/xtrabackup/utils/percona-xtrabackup-8.0_builder.sh -O percona-xtrabackup-8.0_builder.sh
           fi
+          sed -i 's#-o "\${OS_NAME}" == "trixie"#-o "\${OS_NAME}" == "trixie" -o "\${OS_NAME}" == "resolute"#' percona-xtrabackup-8.0_builder.sh
           pwd -P
           export build_dir=\$(pwd -P)
           SBOM_PARAM=""
