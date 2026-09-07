@@ -59,7 +59,8 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
               sed -i '0,/cd \${WORKDIR}/{s|cd \${WORKDIR}/percona-server|cd \${WORKDIR}/percona-server\\n    curl -L "https://github.com/percona/percona-server/compare/release-8.0.34-26...satya-bodapati:percona-server:PS-9107-8.0.34.patch" -o PS-9107-8.0.34.patch\\n    git apply --verbose PS-9107-8.0.34.patch|}' ps_builder.sh
           fi
           sed -i 's|^    wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|    #wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|' ps_builder.sh
-          sed -i 's|^    #wget http://jenkins.percona.com/downloads/boost/\${BOOST_PACKAGE_NAME}.tar.gz|    wget http://jenkins.percona.com/downloads/boost/\${BOOST_PACKAGE_NAME}.tar.gz|' ps_builder.sh
+          sed -i 's|^    #wget http://jenkins.percona.com/downloads/boost/\${BOOST_PACKAGE_NAME}.tar.gz|    wget --no-check-certificate https://downloads.percona.com/downloads/packaging/boost/\${BOOST_PACKAGE_NAME}.tar.gz|' ps_builder.sh
+          grep boost ps_builder.sh
           ls -la
           export build_dir=\$(pwd -P)
           if [ "$DOCKER_OS" = "none" ]; then
