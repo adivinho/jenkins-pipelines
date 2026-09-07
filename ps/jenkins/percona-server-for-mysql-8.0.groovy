@@ -60,6 +60,7 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
           fi
           sed -i 's|^    wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|    #wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|' ps_builder.sh
           sed -i 's|^    #wget http://jenkins.percona.com/downloads/boost/\${BOOST_PACKAGE_NAME}.tar.gz|    wget --no-check-certificate https://downloads.percona.com/downloads/packaging/boost/\${BOOST_PACKAGE_NAME}.tar.gz|' ps_builder.sh
+          sed -i '0,/git checkout "\$BRANCH"/{s#git checkout "\$BRANCH"#git checkout "\$BRANCH"\n    sed -i "s|https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/\${BOOST_TARBALL}|https://downloads.percona.com/downloads/packaging/boost/\${BOOST_TARBALL}|" cmake/boost.cmake#}' ps_builder.sh
           grep boost ps_builder.sh
           ls -la
           export build_dir=\$(pwd -P)
