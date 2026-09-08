@@ -350,6 +350,9 @@ pipeline {
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64-min' : 'docker'
                     }
+                    when {
+                        expression { false }
+                    }
                     steps {
                         cleanUpWS()
                         popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
@@ -362,6 +365,9 @@ pipeline {
                 stage('Debian Bullseye(11) ARM') {
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
+                    }
+                    when {
+                        expression { false }
                     }
                     steps {
                         cleanUpWS()
