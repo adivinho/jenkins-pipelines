@@ -351,7 +351,7 @@ pipeline {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64-min' : 'docker'
                     }
                     when {
-                        expression { false }
+                        expression { true }
                     }
                     steps {
                         cleanUpWS()
@@ -367,7 +367,7 @@ pipeline {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
                     when {
-                        expression { false }
+                        expression { true }
                     }
                     steps {
                         cleanUpWS()
