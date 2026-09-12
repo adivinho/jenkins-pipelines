@@ -203,6 +203,9 @@ parameters {
                                     if [ ${PS_RELEASE} = "8.4.11-11" ]; then
                                         MYSQL_SHELL_RELEASE="8.4.10"
                                     fi
+                                    if [ ${PS_RELEASE} = "9.7.2-2" ]; then
+                                        MYSQL_SHELL_RELEASE="9.7.1"
+                                    fi
                                 else
                                     MYSQL_SHELL_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 7)}' | sed 's/-//g')
                                 fi
