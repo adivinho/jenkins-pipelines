@@ -226,14 +226,14 @@ parameters {
             choices: '#releases-ci\n#releases',
             description: 'Channel for notifications',
             name: 'SLACKNOTIFY')
-        string(
-            defaultValue: '',
-            description: 'Comma-separated list of build stages to run (e.g. "Oracle Linux 9,Oracle Linux 9 ARM"). Leave empty to run all stages.',
-            name: 'BUILD_STAGES')
         choice(
             choices: 'NO\nYES',
             description: 'If YES, abort the whole build as soon as any parallel step is aborted or canceled',
             name: 'FAIL_FAST')
+        string(
+            defaultValue: '',
+            description: 'Comma-separated list of build stages to run (e.g. "Oracle Linux 9,Oracle Linux 9 ARM"). Leave empty to run all stages.',
+            name: 'BUILD_STAGES')
     }
     options {
         skipDefaultCheckout()
