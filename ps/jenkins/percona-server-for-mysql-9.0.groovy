@@ -272,7 +272,6 @@ parameters {
         }
         stage('Build PS generic source packages') {
             parallel {
-                failFast params.FAIL_FAST == 'YES'
                 stage('Build PS generic source rpm') {
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
