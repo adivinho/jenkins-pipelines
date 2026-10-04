@@ -572,8 +572,8 @@ parameters {
                         """
                     }
                     sh '''
-                        REPO_DOCKER="https://github.com/adivinho/percona-docker"
-                        REPO_DOCKER_BRANCH="PXB-3744-Packaging-tasks-for-release-PXB-9.7.1-rc1"
+                        REPO_DOCKER="https://github.com/percona/percona-docker"
+                        REPO_DOCKER_BRANCH="main"
                         PS_RELEASE=$(echo ${BRANCH} | sed 's/release-//g')
                         PS_MAJOR_RELEASE=$(echo ${BRANCH} | sed "s/release-//g" | awk '{print substr($0, 0, 3)}')
                         PS_MAJOR_MINOR_RELEASE=$(echo ${BRANCH} | sed "s/release-//g" | awk '{print substr($0, 0, 7)}' | sed "s/-//g")
@@ -583,8 +583,9 @@ parameters {
                         sudo aa-status
                         sudo systemctl stop apparmor
                         sudo systemctl disable apparmor
-                        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-                        sudo echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+                        DISTRO=$(. /etc/os-release && echo $ID)
+                        curl -fsSL https://download.docker.com/linux/${DISTRO}/gpg | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+                        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/${DISTRO} $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
                         sudo apt-get update
                         sudo apt-get install -y docker-ce docker-ce-cli containerd.io
                         export DOCKER_CLI_EXPERIMENTAL=enabled
