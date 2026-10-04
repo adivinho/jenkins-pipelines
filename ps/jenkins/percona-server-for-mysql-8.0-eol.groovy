@@ -590,7 +590,7 @@ parameters {
                         sudo apt-get install -y docker-ce docker-ce-cli containerd.io
                         export DOCKER_CLI_EXPERIMENTAL=enabled
                         sudo mkdir -p /usr/libexec/docker/cli-plugins/
-                        sudo curl -L https://github.com/docker/buildx/releases/download/v0.35.0/buildx-v0.35.0.linux-amd64 -o /usr/libexec/docker/cli-plugins/docker-buildx
+                        sudo curl -L https://github.com/docker/buildx/releases/download/v0.37.2/buildx-v0.37.2.linux-amd64 -o /usr/libexec/docker/cli-plugins/docker-buildx
                         sudo chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
                         sudo systemctl restart docker
                         sudo apt-get install -y qemu-system binfmt-support qemu-user-static
@@ -603,7 +603,9 @@ parameters {
                         git checkout ${REPO_DOCKER_BRANCH}
                         mv /tmp/*.rpm .
                         sed -i "s/ENV PS_VERSION.*/ENV PS_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" Dockerfile-pro
+                        sed -i "s/ENV PS_VERSION.*/ENV PS_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" Dockerfile.aarch64-pro
                         sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-${RPM_RELEASE}/g" Dockerfile-pro
+                        sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-${RPM_RELEASE}/g" Dockerfile.aarch64-pro
                         sudo docker builder prune -af
                         sudo docker build --provenance=false -t percona/percona-server:${PS_RELEASE}.${RPM_RELEASE}-amd64 --progress plain --platform="linux/amd64" -f Dockerfile-pro .
                         sudo docker buildx build --provenance=false --platform linux/arm64 -t percona/percona-server:${PS_RELEASE}.${RPM_RELEASE}-arm64 --load -f Dockerfile.aarch64-pro .
