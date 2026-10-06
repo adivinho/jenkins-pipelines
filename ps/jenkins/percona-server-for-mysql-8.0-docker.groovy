@@ -535,14 +535,14 @@ parameters {
                     withCredentials([usernamePassword(credentialsId: 'hub.docker.com',
                                                       passwordVariable: 'PASS',
                                                       usernameVariable: 'USER')]) {
-                        sh 'echo "${PASS}" | docker login -u "${USER}" --password-stdin'
+                        sh 'echo "${PASS}" | sudo docker login -u "${USER}" --password-stdin'
                         sh 'echo "${PASS}" | oras login -u "${USER}" --password-stdin docker.io'
 
                         images.each { name, repo ->
                             sh """
                                 set -e
                                 MANIFEST_TAG="${repo}:${PS_RELEASE}.${RPM_RELEASE}"
-                                INSPECT=\$(docker buildx imagetools inspect --raw \${MANIFEST_TAG})
+                                INSPECT=\$(sudo docker buildx imagetools inspect --raw \${MANIFEST_TAG})
 
                                 for ARCH in amd64 arm64; do
                                     DIGEST=\$(echo "\${INSPECT}" \
