@@ -497,7 +497,7 @@ parameters {
                     // Container-image SBOM generation/attach only applies to
                     // PS releases newer than 9.7
                     def rel = sh(returnStdout: true, script: """
-                        if echo '${BRANCH}' | grep -Eq '^release-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\$'; then
+                        if echo '${BRANCH}' | grep -Eq '^release-[0-9]+\\.[0-9]+\\.[0-9]+-[0-9]+\$'; then
                             echo '${BRANCH}' | sed 's/release-//g'
                         else
                             TMP=\$(mktemp)
