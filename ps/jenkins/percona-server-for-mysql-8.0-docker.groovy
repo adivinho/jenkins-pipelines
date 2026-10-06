@@ -249,12 +249,6 @@ parameters {
                                 PS_MAJOR_RELEASE=$(echo ${BRANCH} | sed "s/release-//g" | sed "s/\\.//g" | awk '{print substr($0, 0, 2)}')
                                 if [ ${PS_MAJOR_RELEASE} != "80" ]; then
                                     MYSQL_SHELL_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 6)}' | sed 's/-//g')
-                                    if [ ${PS_RELEASE} = "8.4.11-11" ]; then
-                                        MYSQL_SHELL_RELEASE="8.4.10"
-                                    fi
-                                    if [ ${PS_RELEASE} = "9.7.2-2" ]; then
-                                        MYSQL_SHELL_RELEASE="9.7.1"
-                                    fi
                                 else
                                     MYSQL_SHELL_RELEASE=$(echo ${BRANCH} | sed 's/release-//g' | awk '{print substr($0, 0, 7)}' | sed 's/-//g')
                                 fi
@@ -269,6 +263,12 @@ parameters {
                                 PS_RELEASE="${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}${VER_EXTRA}"
                                 PS_MAJOR_RELEASE="${VER_MAJOR}${VER_MINOR}"
                                 MYSQL_SHELL_RELEASE="${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}"
+                            fi
+                            if [ ${PS_RELEASE} = "8.4.11-11" ]; then
+                                MYSQL_SHELL_RELEASE="8.4.10"
+                            fi
+                            if [ ${PS_RELEASE} = "9.7.2-2" ]; then
+                                MYSQL_SHELL_RELEASE="9.7.1"
                             fi
                             MYSQL_ROUTER_RELEASE=${PS_RELEASE}
 
