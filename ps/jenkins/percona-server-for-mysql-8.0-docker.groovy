@@ -280,7 +280,7 @@ parameters {
                             sudo apt-get install -y docker-ce docker-ce-cli containerd.io
                             export DOCKER_CLI_EXPERIMENTAL=enabled
                             sudo mkdir -p /usr/libexec/docker/cli-plugins/
-                            sudo curl -L https://github.com/docker/buildx/releases/download/v0.30.0/buildx-v0.30.0.linux-amd64 -o /usr/libexec/docker/cli-plugins/docker-buildx
+                            sudo curl -L https://github.com/docker/buildx/releases/download/v0.37.2/buildx-v0.37.2.linux-amd64 -o /usr/libexec/docker/cli-plugins/docker-buildx
                             sudo chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
                             sudo systemctl restart docker
                             sudo apt-get install -y qemu-system binfmt-support qemu-user-static
@@ -542,7 +542,8 @@ parameters {
                             sh """
                                 set -e
                                 MANIFEST_TAG="${repo}:${PS_RELEASE}.${RPM_RELEASE}"
-                                INSPECT=\$(sudo docker buildx imagetools inspect --raw \${MANIFEST_TAG})
+                                ORAS_REF="docker.io/${repo}"
+                                INSPECT=\$(oras manifest fetch "\${ORAS_REF}:${PS_RELEASE}.${RPM_RELEASE}")
 
                                 for ARCH in amd64 arm64; do
                                     DIGEST=\$(echo "\${INSPECT}" \
@@ -570,10 +571,10 @@ parameters {
                                     [ "\${COMPONENT_COUNT}" -ge 10 ] || { echo "ERROR: ${name}/\${ARCH} SBOM has only \${COMPONENT_COUNT} components" >&2; exit 1; }
 
                                     oras attach --artifact-type application/vnd.cyclonedx+json \
-                                        "${repo}@\${DIGEST}" "\${SBOM_FILE}"
+                                        "\${ORAS_REF}@\${DIGEST}" "\${SBOM_FILE}"
 
                                     echo "SBOM attached for ${name} (\${ARCH}):"
-                                    oras discover --format tree "${repo}@\${DIGEST}"
+                                    oras discover --format tree "\${ORAS_REF}@\${DIGEST}"
                                 done
                             """
                         }
