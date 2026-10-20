@@ -109,12 +109,13 @@ parameters {
                                 echo "ERROR: failed to pin percona-haproxy-${VERSION}-${RPM_RELEASE}.el9 in ${Dockerfile}"
                                 exit 1
                             fi
-                            # HAProxy 3.x+ is shipped in the pdpxc-97-lts repository, take the PXC client from it unpinned
+                            # HAProxy 3.x+ is shipped in the pdpxc 9.7 repository, take the PXC client from it unpinned
                             if [ "$(printf '%s\\n' 3.0.0 ${VERSION} | sort -V | head -n1)" = "3.0.0" ]; then
-                                sed -i -E "s/percona-release enable pdpxc-[^[:space:]]+/percona-release enable pdpxc-9.7.2/" ${Dockerfile}
+                                PDPXC_REPO="pdpxc-9.7.2"
+                                sed -i -E "s/percona-release enable pdpxc-[^[:space:]]+/percona-release enable ${PDPXC_REPO}/" ${Dockerfile}
                                 sed -i -E "s/percona-xtradb-cluster-client-[^[:space:]]+/percona-xtradb-cluster-client/" ${Dockerfile}
-                                if ! grep -q "percona-release enable pdpxc-97-lts" ${Dockerfile} || ! grep -qE "^[[:space:]]+percona-xtradb-cluster-client[[:space:]]" ${Dockerfile}; then
-                                    echo "ERROR: failed to switch ${Dockerfile} to pdpxc-97-lts for HAProxy ${VERSION}"
+                                if ! grep -q "percona-release enable ${PDPXC_REPO}" ${Dockerfile} || ! grep -qE "^[[:space:]]+percona-xtradb-cluster-client[[:space:]]" ${Dockerfile}; then
+                                    echo "ERROR: failed to switch ${Dockerfile} to ${PDPXC_REPO} for HAProxy ${VERSION}"
                                     exit 1
                                 fi
                             fi
