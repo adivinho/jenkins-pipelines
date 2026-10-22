@@ -299,13 +299,15 @@ parameters {
                             esac
 
                             sed -i "s/ENV PS_VERSION.*/ENV PS_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" ${Dockerfile}
-                            sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-${RPM_RELEASE}/g" ${Dockerfile}
+                            sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-1/g" ${Dockerfile}
                             sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-2/g" ${Dockerfile}
                             sed -i "s/ENV PS_REPO .*/ENV PS_REPO ${COMPONENT}/g" ${Dockerfile}
                             sed -i "s/ENV PS_VERSION.*/ENV PS_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" ${Dockerfile}.aarch64
-                            sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-${RPM_RELEASE}/g" ${Dockerfile}.aarch64
-                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-${RPM_RELEASE}/g" ${Dockerfile}.aarch64
+                            sed -i "s/ENV PS_TELEMETRY_VERSION.*/ENV PS_TELEMETRY_VERSION ${PS_RELEASE}-1/g" ${Dockerfile}.aarch64
+                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-2/g" ${Dockerfile}.aarch64
                             sed -i "s/ENV PS_REPO .*/ENV PS_REPO testing/g" ${Dockerfile}.aarch64
+                            sed -i "s/^\\s*percona-release enable mysql-shell experimental;/#&/" ${Dockerfile}
+                            sed -i "s/^\\s*percona-release enable mysql-shell experimental;/#&/" ${Dockerfile}.aarch64
                             sudo docker --version
 
                             if [ ${COMPONENT} = "experimental" ]; then
@@ -327,7 +329,8 @@ parameters {
 
                             cd ../mysql-router
                             sed -i "s/ENV ROUTE_VERSION.*/ENV ROUTE_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" Dockerfile
-                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-${RPM_RELEASE}/g" Dockerfile
+                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-1/g" Dockerfile
+                            sed -i "s/^\\s*percona-release enable mysql-shell experimental;/#&/" Dockerfile
 
                             case ${PS_MAJOR_RELEASE} in
                                 80) echo "no sed command is required" ;;
