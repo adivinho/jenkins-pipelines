@@ -329,7 +329,7 @@ parameters {
 
                             cd ../mysql-router
                             sed -i "s/ENV ROUTE_VERSION.*/ENV ROUTE_VERSION ${PS_RELEASE}.${RPM_RELEASE}/g" Dockerfile
-                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-1/g" Dockerfile
+                            sed -i "s/ENV MYSQL_SHELL_VERSION.*/ENV MYSQL_SHELL_VERSION ${MYSQL_SHELL_RELEASE}-2/g" Dockerfile
                             sed -i "s/^\\s*percona-release enable mysql-shell experimental;/#&/" Dockerfile
 
                             case ${PS_MAJOR_RELEASE} in
