@@ -542,12 +542,17 @@ parameters {
         stage('Build PS RPMs/DEBs/Binary tarballs') {
             steps {
                 script {
-                    psBuildMatrix(
-                        cloud: params.CLOUD,
-                        awsStashPath: AWS_STASH_PATH,
-                        fipsMode: env.FIPSMODE,
-                        onlyStages: params.BUILD_STAGES ? params.BUILD_STAGES.split(',').collect { it.trim() } : []
-                    )
+                    // Do not fail the whole pipeline if one of the parallel build steps fails:
+                    // the remaining steps still finish, this stage is marked as failed,
+                    // the build is marked as UNSTABLE and the next stages continue
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        psBuildMatrix(
+                            cloud: params.CLOUD,
+                            awsStashPath: AWS_STASH_PATH,
+                            fipsMode: env.FIPSMODE,
+                            onlyStages: params.BUILD_STAGES ? params.BUILD_STAGES.split(',').collect { it.trim() } : []
+                        )
+                    }
                 }
             }
         }
