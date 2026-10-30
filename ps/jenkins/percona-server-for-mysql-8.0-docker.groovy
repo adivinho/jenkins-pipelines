@@ -264,10 +264,10 @@ parameters {
                                 PS_MAJOR_RELEASE="${VER_MAJOR}${VER_MINOR}"
                                 MYSQL_SHELL_RELEASE="${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}"
                             fi
-                            if [ ${PS_RELEASE} = "8.4.11-11" ]; then
+                            if [ ${PS_RELEASE} = "8.4.11-12" ]; then
                                 MYSQL_SHELL_RELEASE="8.4.10"
                             fi
-                            if [ ${PS_RELEASE} = "9.7.2-2" ]; then
+                            if [ ${PS_RELEASE} = "9.7.2-3" ]; then
                                 MYSQL_SHELL_RELEASE="9.7.1"
                             fi
                             MYSQL_ROUTER_RELEASE=${PS_RELEASE}
