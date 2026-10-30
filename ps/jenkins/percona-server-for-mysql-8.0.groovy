@@ -39,8 +39,19 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
       sh """
           set -o xtrace
           mkdir -p test
+          # GIT_REPO can be either a public (percona-server) or a private (percona-server-private) repository
+          if echo "${GIT_REPO}" | grep -q -- '-private'; then
+              IS_PRIVATE_REPO=1
+          else
+              IS_PRIVATE_REPO=0
+          fi
           if [ \${FIPSMODE} = "YES" ]; then
-              MYSQL_VERSION_MINOR=\$(curl -s -O \$(echo \${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/\${BRANCH}/MYSQL_VERSION && grep MYSQL_VERSION_MINOR MYSQL_VERSION | awk -F= '{print \$2}')
+              if [ \${IS_PRIVATE_REPO} = 1 ]; then
+                  wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O MYSQL_VERSION \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/MYSQL_VERSION?ref=${BRANCH}
+              else
+                  curl -s -O \$(echo \${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/\${BRANCH}/MYSQL_VERSION
+              fi
+              MYSQL_VERSION_MINOR=\$(grep MYSQL_VERSION_MINOR MYSQL_VERSION | awk -F= '{print \$2}')
               if [ \${MYSQL_VERSION_MINOR} = "0" ]; then
                   PRO_BRANCH="8.0"
               elif [ \${MYSQL_VERSION_MINOR} = "4" ]; then
@@ -55,13 +66,17 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
               sed -i 's|percona-server-server/usr|percona-server-server-pro/usr|g' ps_builder.sh
               sed -i 's|dbg-package=percona-server-dbg|dbg-package=percona-server-pro-dbg|g' ps_builder.sh
           else
-              wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
-              sed -i '0,/cd \${WORKDIR}/{s|cd \${WORKDIR}/percona-server|cd \${WORKDIR}/percona-server\\n    curl -L "https://github.com/percona/percona-server/compare/release-8.0.34-26...satya-bodapati:percona-server:PS-9107-8.0.34.patch" -o PS-9107-8.0.34.patch\\n    git apply --verbose PS-9107-8.0.34.patch|}' ps_builder.sh
+              if [ \${IS_PRIVATE_REPO} = 1 ]; then
+                  wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O ps_builder.sh \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/build-ps/percona-server-8.0_builder.sh?ref=${BRANCH}
+              else
+                  wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
+              fi
           fi
-          #sed -i 's|^    wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|    #wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz|' ps_builder.sh
-          #sed -i 's|^    #wget http://jenkins.percona.com/downloads/boost/\${BOOST_PACKAGE_NAME}.tar.gz|    wget --no-check-certificate https://downloads.percona.com/downloads/packaging/boost/\${BOOST_PACKAGE_NAME}.tar.gz|' ps_builder.sh
-          #sed -i '0,/git checkout "\$BRANCH"/{s#git checkout "\$BRANCH"#git checkout "\$BRANCH"\\n    sed -i "s|https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/\${BOOST_TARBALL}|https://downloads.percona.com/downloads/packaging/boost/\${BOOST_TARBALL}|" cmake/boost.cmake#}' ps_builder.sh
-          #grep boost ps_builder.sh
+          if [ \${IS_PRIVATE_REPO} = 1 ]; then
+              # Private repository: clone with the token into the percona-server directory expected by the builder
+              sed -i "s|git clone --depth 1 --branch \\\$BRANCH \\\"\\\$REPO\\\"|git clone --depth 1 --branch \\\$BRANCH \$(echo ${GIT_REPO}| sed -re 's|github.com|${TOKEN}@github.com|') percona-server|g" ps_builder.sh
+              grep "git clone" ps_builder.sh
+          fi
           ls -la
           export build_dir=\$(pwd -P)
           if [ "$DOCKER_OS" = "none" ]; then
@@ -459,9 +474,15 @@ parameters {
                     AWS_STASH_PATH = sh(returnStdout: true, script: "cat awsUploadPath").trim()
                 }
                 script {
-                    sh """
-                        curl -s \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/MYSQL_VERSION -o MYSQL_VERSION
-                    """
+                    withCredentials([string(credentialsId: 'GITHUB_API_TOKEN', variable: 'TOKEN')]) {
+                        sh """
+                            if echo "${GIT_REPO}" | grep -q -- '-private'; then
+                                wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O MYSQL_VERSION \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/MYSQL_VERSION?ref=${BRANCH}
+                            else
+                                curl -s \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/MYSQL_VERSION -o MYSQL_VERSION
+                            fi
+                        """
+                    }
                     env.MYSQL_VERSION_MAJOR = sh(returnStdout: true, script: "grep '^MYSQL_VERSION_MAJOR=' MYSQL_VERSION | cut -d= -f2").trim()
                     env.MYSQL_VERSION_MINOR = sh(returnStdout: true, script: "grep '^MYSQL_VERSION_MINOR=' MYSQL_VERSION | cut -d= -f2").trim()
                     echo "Detected Percona Server version: ${env.MYSQL_VERSION_MAJOR}.${env.MYSQL_VERSION_MINOR}"
@@ -603,7 +624,16 @@ parameters {
             steps {
                 unstash 'properties'
                 script {
-                    MYSQL_VERSION_MINOR = sh(returnStdout: true, script: ''' curl -s -O $(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git$||')/${BRANCH}/MYSQL_VERSION; cat MYSQL_VERSION | grep MYSQL_VERSION_MINOR | awk -F= '{print $2}' ''').trim()
+                    withCredentials([string(credentialsId: 'GITHUB_API_TOKEN', variable: 'TOKEN')]) {
+                        sh """
+                            if echo "${GIT_REPO}" | grep -q -- '-private'; then
+                                wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O MYSQL_VERSION \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/MYSQL_VERSION?ref=${BRANCH}
+                            else
+                                curl -s \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/MYSQL_VERSION -o MYSQL_VERSION
+                            fi
+                        """
+                    }
+                    MYSQL_VERSION_MINOR = sh(returnStdout: true, script: ''' cat MYSQL_VERSION | grep MYSQL_VERSION_MINOR | awk -F= '{print $2}' ''').trim()
                     PS_MAJOR_RELEASE = sh(returnStdout: true, script: ''' echo ${BRANCH} | sed "s/release-//g" | sed "s/\\.//g" | awk '{print substr($0, 0, 2)}' ''').trim()
                     // sync packages
                     if ("${MYSQL_VERSION_MINOR}" == "0") {
