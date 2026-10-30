@@ -51,8 +51,19 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
           set -o xtrace
           free -h
           mkdir -p test
+          # GIT_REPO can be either a public (percona-server) or a private (percona-server-private) repository
+          if echo "${GIT_REPO}" | grep -q -- '-private'; then
+              IS_PRIVATE_REPO=1
+          else
+              IS_PRIVATE_REPO=0
+          fi
           if [ \${FIPSMODE} = "YES" ]; then
-              MYSQL_VERSION_MINOR=\$(curl -s -O \$(echo \${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/\${BRANCH}/MYSQL_VERSION && grep MYSQL_VERSION_MINOR MYSQL_VERSION | awk -F= '{print \$2}')
+              if [ \${IS_PRIVATE_REPO} = 1 ]; then
+                  wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O MYSQL_VERSION \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/MYSQL_VERSION?ref=${BRANCH}
+              else
+                  curl -s -O \$(echo \${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/\${BRANCH}/MYSQL_VERSION
+              fi
+              MYSQL_VERSION_MINOR=\$(grep MYSQL_VERSION_MINOR MYSQL_VERSION | awk -F= '{print \$2}')
               if [ \${MYSQL_VERSION_MINOR} = "0" ]; then
                   PRO_BRANCH="8.0"
               elif [ \${MYSQL_VERSION_MINOR} = "4" ]; then
@@ -67,7 +78,16 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
               sed -i 's|percona-server-server/usr|percona-server-server-pro/usr|g' ps_builder.sh
               sed -i 's|dbg-package=percona-server-dbg|dbg-package=percona-server-pro-dbg|g' ps_builder.sh
           else
-              wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
+              if [ \${IS_PRIVATE_REPO} = 1 ]; then
+                  wget --header="Authorization: token ${TOKEN}" --header="Accept: application/vnd.github.v3.raw" -O ps_builder.sh \$(echo ${GIT_REPO} | sed -re 's|github.com|api.github.com/repos|; s|\\.git\$||')/contents/build-ps/percona-server-8.0_builder.sh?ref=${BRANCH}
+              else
+                  wget \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -O ps_builder.sh || curl \$(echo ${GIT_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/build-ps/percona-server-8.0_builder.sh -o ps_builder.sh
+              fi
+          fi
+          if [ \${IS_PRIVATE_REPO} = 1 ]; then
+              # Private repository: clone with the token into the percona-server directory expected by the builder
+              sed -i "s|git clone --depth 1 --branch \\\$BRANCH \\\"\\\$REPO\\\"|git clone --depth 1 --branch \\\$BRANCH \$(echo ${GIT_REPO}| sed -re 's|github.com|${TOKEN}@github.com|') percona-server|g" ps_builder.sh
+              grep "git clone" ps_builder.sh
           fi
           export build_dir=\$(pwd -P)
           if [ "$DOCKER_OS" = "none" ]; then
