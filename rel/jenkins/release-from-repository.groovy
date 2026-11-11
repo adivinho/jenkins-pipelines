@@ -254,7 +254,13 @@ ENDSSH
                                    PRODUCT=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$3}')
                                    RELEASE=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$4}')
                                    REVISION=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$6}')
-                                   PRN=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$5}' | awk -F '-' '{ if (NF > 2) print "-" \$NF }')
+                                   # PRN (e.g. -39 from release-8.0.46-39) is used only for Percona-XtraDB-Cluster, empty for other products
+                                   PRN=""
+                                   case "\${PRODUCT}" in
+                                       Percona-XtraDB-Cluster*)
+                                           PRN=\$(echo ${PATH_TO_BUILD} | awk -F '/' '{print \$5}' | awk -F '-' '{ if (NF > 2) print "-" \$NF }')
+                                           ;;
+                                   esac
                                    RELEASEDIR="/srv/UPLOAD/${PATH_TO_BUILD}/.tmp/\${PRODUCT}/\${RELEASE}"
                                    LCREPOSITORY=\$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]')
                                    rm -fr /srv/UPLOAD/${PATH_TO_BUILD}/.tmp
