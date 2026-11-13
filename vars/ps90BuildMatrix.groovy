@@ -49,6 +49,9 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
             # Use the GitHub mirror instead of git.savannah.gnu.org
             sed -i 's|git.savannah.gnu.org/git|github.com/cgitmirror|g' ps_builder.sh
             grep -n 'github.com/cgitmirror' ps_builder.sh || true
+            # Rename *.ddeb debug packages to *.deb right before they are copied to the deb folders
+            sed -i 's#^\\( *\\)cp \\\$WORKDIR/\\*\\.deb \\\$WORKDIR/deb\$#\\1for ddeb in \$WORKDIR/*.ddeb; do\\n\\1    [ -e "\${ddeb}" ] || continue\\n\\1    mv -v "\${ddeb}" "\${ddeb%.ddeb}.deb"\\n\\1done\\n&#' ps_builder.sh
+            grep -n -B1 -A5 'for ddeb in' ps_builder.sh || true
             export build_dir=\$(pwd -P)
             SBOM_PARAM=""
             if [ "${ENABLE_SBOM}" = "ON" ]; then SBOM_PARAM="--sbom=1"; fi
