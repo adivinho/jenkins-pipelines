@@ -570,6 +570,27 @@ def call(Map args) {
         }
     }
 
+    stagesMap['Oracle Linux 9 tarball ARM'] = {
+        stage('Oracle Linux 9 tarball ARM') {
+            if (!shouldRun('Oracle Linux 9 tarball ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(cloud == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                installCli()
+                unstash 'properties'
+                popArtifactFolder(cloud, 'source_tarball/', awsStashPath)
+                if (fipsMode == 'YES') {
+                    buildStage('oraclelinux:9', '--build_tarball=1 --enable_fipsmode=1')
+                } else {
+                    buildStage('oraclelinux:9', '--build_tarball=1')
+                }
+                if (experimentalMode == 'NO') { pushArtifactFolder(cloud, 'tarball/', awsStashPath) }
+            }
+        }
+    }
+
     stagesMap['Ubuntu Jammy(22.04) tarball'] = {
         stage('Ubuntu Jammy(22.04) tarball') {
             if (!shouldRun('Ubuntu Jammy(22.04) tarball')) {
@@ -577,6 +598,27 @@ def call(Map args) {
                 return
             }
             node(cloud == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                installCli()
+                unstash 'properties'
+                popArtifactFolder(cloud, 'source_tarball/', awsStashPath)
+                if (fipsMode == 'YES') {
+                    buildStage('ubuntu:jammy', '--build_tarball=1 --enable_fipsmode=1')
+                } else {
+                    buildStage('ubuntu:jammy', '--build_tarball=1')
+                }
+                if (experimentalMode == 'NO') { pushArtifactFolder(cloud, 'tarball/', awsStashPath) }
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Jammy(22.04) tarball ARM'] = {
+        stage('Ubuntu Jammy(22.04) tarball ARM') {
+            if (!shouldRun('Ubuntu Jammy(22.04) tarball ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(cloud == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
                 cleanUpWS()
                 installCli()
                 unstash 'properties'

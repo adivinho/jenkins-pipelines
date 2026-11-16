@@ -391,8 +391,8 @@ parameters {
                 script {
                     def tarballStages = [
                         'Oracle Linux 8 binary tarball', 'Oracle Linux 8 debug tarball',
-                        'Oracle Linux 9 tarball', 'Oracle Linux 9 ZenFS tarball', 'Oracle Linux 9 debug tarball',
-                        'Ubuntu Jammy(22.04) tarball', 'Ubuntu Jammy(22.04) ZenFS tarball', 'Ubuntu Jammy(22.04) debug tarball'
+                        'Oracle Linux 9 tarball', 'Oracle Linux 9 ZenFS tarball', 'Oracle Linux 9 debug tarball', 'Oracle Linux 9 tarball ARM',
+                        'Ubuntu Jammy(22.04) tarball', 'Ubuntu Jammy(22.04) ZenFS tarball', 'Ubuntu Jammy(22.04) debug tarball', 'Ubuntu Jammy(22.04) tarball ARM'
                     ]
                     def requestedStages = params.BUILD_STAGES ? params.BUILD_STAGES.split(',').collect { it.trim() } : []
                     if (env.EXPERIMENTALMODE == 'NO' && (!requestedStages || requestedStages.any { tarballStages.contains(it) })) {
