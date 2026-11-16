@@ -9,6 +9,18 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
         mkdir test
         wget \$(echo ${PACKAGE_REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${PACKAGE_REPO_BRANCH}/orchestrator_builder.sh -O builder.sh
         sed -i "s:RELEASE='6':RELEASE='${RPM_RELEASE}':" builder.sh
+        # Use the Go version from go.mod of the orchestrator repository (REPO/BRANCH)
+        GO_VERSION=\$(curl -fsSL \$(echo ${REPO} | sed -re 's|github.com|raw.githubusercontent.com|; s|\\.git\$||')/${BRANCH}/go.mod | awk '/^go [0-9]/ {print \$2; exit}')
+        if [ -n "\${GO_VERSION}" ]; then
+            # "go 1.26" in go.mod means the Go release 1.26.0
+            if [ "\$(echo \${GO_VERSION} | tr -cd '.' | wc -c)" -eq 1 ]; then
+                GO_VERSION="\${GO_VERSION}.0"
+            fi
+            sed -i "s/GO_VERSION=\\\"[^\\\"]*\\\"/GO_VERSION=\\\"\${GO_VERSION}\\\"/" builder.sh
+        else
+            echo "WARNING: Go version was not found in go.mod, the default one from builder.sh is used"
+        fi
+        grep -n 'GO_VERSION=' builder.sh
         export build_dir=\$(pwd -P)
         docker run -u root -v \${build_dir}:\${build_dir} ${DOCKER_OS} sh -c "
             set -o xtrace
