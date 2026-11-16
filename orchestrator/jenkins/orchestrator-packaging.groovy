@@ -70,11 +70,11 @@ pipeline {
             description: 'General version of the product',
             name: 'VERSION')
         string(
-            defaultValue: '24',
+            defaultValue: '26.1',
             description: 'RPM release value (e.g. custom build -> 1.1custom124)',
             name: 'RPM_RELEASE')
         string(
-            defaultValue: '24',
+            defaultValue: '26.1',
             description: 'DEB release value (e.g. custom build -> 1.1custom124)',
             name: 'DEB_RELEASE')
         choice(
