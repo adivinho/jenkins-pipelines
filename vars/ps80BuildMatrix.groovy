@@ -261,12 +261,6 @@ def call(Map args = [:]) {
             fipsFlags: '--build_tarball=1 --enable_fipsmode=1', skipInFips: false,
         ],
         [
-            name: 'Oracle Linux 9 ZenFS tarball',
-            image: 'oraclelinux:9', arch: 'x64', buildType: 'tarball',
-            flags: '--build_tarball=1 --with_zenfs=1',
-            fipsFlags: null, skipInFips: true,
-        ],
-        [
             name: 'Oracle Linux 9 debug tarball',
             image: 'oraclelinux:9', arch: 'x64', buildType: 'tarball',
             flags: '--debug=1 --build_tarball=1',
@@ -289,12 +283,6 @@ def call(Map args = [:]) {
             image: 'ubuntu:jammy', arch: 'x64', buildType: 'tarball',
             flags: '--build_tarball=1',
             fipsFlags: '--build_tarball=1 --enable_fipsmode=1', skipInFips: false,
-        ],
-        [
-            name: 'Ubuntu Jammy(22.04) ZenFS tarball',
-            image: 'ubuntu:jammy', arch: 'x64', buildType: 'tarball',
-            flags: '--build_tarball=1 --with_zenfs=1',
-            fipsFlags: null, skipInFips: true,
         ],
         [
             name: 'Ubuntu Jammy(22.04) debug tarball',

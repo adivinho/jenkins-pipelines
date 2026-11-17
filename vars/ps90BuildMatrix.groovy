@@ -528,27 +528,6 @@ def call(Map args) {
         }
     }
 
-    stagesMap['Oracle Linux 9 ZenFS tarball'] = {
-        stage('Oracle Linux 9 ZenFS tarball') {
-            if (!shouldRun('Oracle Linux 9 ZenFS tarball')) {
-                echo 'Skipped: not in BUILD_STAGES filter'
-                return
-            }
-            node(cloud == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
-                cleanUpWS()
-                installCli()
-                unstash 'properties'
-                popArtifactFolder(cloud, 'source_tarball/', awsStashPath)
-                if (fipsMode == 'YES') {
-                    echo 'The step is skipped'
-                } else {
-                    buildStage('oraclelinux:9', '--build_tarball=1 --with_zenfs=1')
-                    if (experimentalMode == 'NO') { pushArtifactFolder(cloud, 'tarball/', awsStashPath) }
-                }
-            }
-        }
-    }
-
     stagesMap['Oracle Linux 9 debug tarball'] = {
         stage('Oracle Linux 9 debug tarball') {
             if (!shouldRun('Oracle Linux 9 debug tarball')) {
@@ -629,27 +608,6 @@ def call(Map args) {
                     buildStage('ubuntu:jammy', '--build_tarball=1')
                 }
                 if (experimentalMode == 'NO') { pushArtifactFolder(cloud, 'tarball/', awsStashPath) }
-            }
-        }
-    }
-
-    stagesMap['Ubuntu Jammy(22.04) ZenFS tarball'] = {
-        stage('Ubuntu Jammy(22.04) ZenFS tarball') {
-            if (!shouldRun('Ubuntu Jammy(22.04) ZenFS tarball')) {
-                echo 'Skipped: not in BUILD_STAGES filter'
-                return
-            }
-            node(cloud == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
-                cleanUpWS()
-                installCli()
-                unstash 'properties'
-                popArtifactFolder(cloud, 'source_tarball/', awsStashPath)
-                if (fipsMode == 'YES') {
-                    echo 'The step is skipped'
-                } else {
-                    buildStage('ubuntu:jammy', '--build_tarball=1 --with_zenfs=1')
-                    if (experimentalMode == 'NO') { pushArtifactFolder(cloud, 'tarball/', awsStashPath) }
-                }
             }
         }
     }
