@@ -44,6 +44,16 @@ void buildStage(String DOCKER_OS, String STAGE_PARAM) {
     }
 }
 
+// BUILD_STAGES: comma-separated list of steps to run in 'Build PXB RPMs/DEBs/Binary tarballs' (empty = all)
+List<String> requestedBuildStages() {
+    return params.BUILD_STAGES ? params.BUILD_STAGES.split(',').collect { it.trim() }.findAll { it } : []
+}
+
+boolean shouldRunStage(String stageName) {
+    def requested = requestedBuildStages()
+    return !requested || requested.contains(stageName)
+}
+
 void cleanUpWS() {
     sh """
         sudo rm -rf ./*
@@ -200,6 +210,10 @@ pipeline {
             choices: 'testing\nlaboratory\nexperimental',
             description: 'Repo component to push packages to',
             name: 'COMPONENT')
+        string(
+            defaultValue: '',
+            description: 'Comma-separated list of build stages to run in "Build PXB RPMs/DEBs/Binary tarballs" (e.g. "Oracle Linux 9,Oracle Linux 9 ARM"). Leave empty to run all stages.',
+            name: 'BUILD_STAGES')
     }
     options {
         skipDefaultCheckout()
@@ -285,6 +299,10 @@ pipeline {
         stage('Build PXB RPMs/DEBs/Binary tarballs') {
             parallel {
                 stage('Oracle Linux 8') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 8') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -304,6 +322,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 8 ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 8 ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -323,6 +345,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 9') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 9') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -342,6 +368,10 @@ pipeline {
                     }
                 } 
                 stage('Oracle Linux 9 ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 9 ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64'
                     }
@@ -361,6 +391,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 10') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 10') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -380,6 +414,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 10 ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 10 ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -399,6 +437,10 @@ pipeline {
                     }
                 }
                 stage('Amazon Linux 2023') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Amazon Linux 2023') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -414,6 +456,10 @@ pipeline {
                     }
                 }
                 stage('Amazon Linux 2023 ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Amazon Linux 2023 ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -429,6 +475,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Jammy(22.04)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Jammy(22.04)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -448,6 +498,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Jammy(22.04) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Jammy(22.04) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -467,6 +521,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Noble(24.04)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Noble(24.04)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -486,6 +544,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Noble(24.04) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Noble(24.04) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64'
                     }
@@ -505,6 +567,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Resolute(26.04)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Resolute(26.04)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -524,6 +590,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Resolute(26.04) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Resolute(26.04) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -543,6 +613,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bullseye(11)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bullseye(11)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -562,6 +636,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bullseye(11) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bullseye(11) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -581,6 +659,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bookworm(12)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bookworm(12)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -599,6 +681,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bookworm(12) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bookworm(12) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -617,6 +703,10 @@ pipeline {
                     }
                 }
                 stage('Debian Trixie(13)') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Trixie(13)') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -635,6 +725,10 @@ pipeline {
                     }
                 }
                 stage('Debian Trixie(13) ARM') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Trixie(13) ARM') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
                     }
@@ -653,6 +747,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 8 tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 8 tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -672,6 +770,10 @@ pipeline {
                     }
                 }
                 stage('Oracle Linux 9 tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Oracle Linux 9 tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -691,6 +793,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Focal(20.04) tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Focal(20.04) tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -710,6 +816,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Jammy(22.04) tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Jammy(22.04) tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -729,6 +839,10 @@ pipeline {
                     }
                 }
                 stage('Ubuntu Noble(24.04) tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Ubuntu Noble(24.04) tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -748,6 +862,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bullseye(11) tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bullseye(11) tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -767,6 +885,10 @@ pipeline {
                     }
                 }
                 stage('Debian Bookworm(12) tarball') {
+                    when {
+                        beforeAgent true
+                        expression { shouldRunStage('Debian Bookworm(12) tarball') }
+                    }
                     agent {
                         label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
                     }
@@ -790,8 +912,31 @@ pipeline {
 
         stage('Sign packages') {
             steps {
-                signRPM()
-                signDEB()
+                script {
+                    def rpmStages = [
+                        'Oracle Linux 8', 'Oracle Linux 8 ARM', 'Oracle Linux 9', 'Oracle Linux 9 ARM',
+                        'Oracle Linux 10', 'Oracle Linux 10 ARM', 'Amazon Linux 2023', 'Amazon Linux 2023 ARM'
+                    ]
+                    def requested = requestedBuildStages()
+                    // Sign RPMs only if at least one RPM build step was run
+                    def rpmBuilt = !requested || requested.any { rpmStages.contains(it) }
+                    if (rpmBuilt) {
+                        signRPM()
+                    }
+                    def debStages = [
+                        'Ubuntu Jammy(22.04)', 'Ubuntu Jammy(22.04) ARM',
+                        'Ubuntu Noble(24.04)', 'Ubuntu Noble(24.04) ARM',
+                        'Ubuntu Resolute(26.04)', 'Ubuntu Resolute(26.04) ARM',
+                        'Debian Bullseye(11)', 'Debian Bullseye(11) ARM',
+                        'Debian Bookworm(12)', 'Debian Bookworm(12) ARM',
+                        'Debian Trixie(13)', 'Debian Trixie(13) ARM'
+                    ]
+                    // Sign DEBs only if at least one DEB build step was run
+                    def debBuilt = !requested || requested.any { debStages.contains(it) }
+                    if (debBuilt) {
+                        signDEB()
+                    }
+                }
             }
         }
         stage('Push Tarballs to TESTING download area') {
