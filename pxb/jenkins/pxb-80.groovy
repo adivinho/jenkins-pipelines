@@ -54,6 +54,570 @@ boolean shouldRunStage(String stageName) {
     return !requested || requested.contains(stageName)
 }
 
+// Parallel steps of the stage 'Build PXB RPMs/DEBs/Binary tarballs'.
+// They are created here, outside of the declarative pipeline block, to keep that block
+// below the JVM method size limit ("Method too large").
+def buildPxbPackagesStages(String AWS_STASH_PATH) {
+    def stagesMap = [:]
+
+    stagesMap['Oracle Linux 8'] = {
+        stage('Oracle Linux 8') {
+            if (!shouldRunStage('Oracle Linux 8')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                    buildStage("oraclelinux:8", "--build_rpm=1")
+
+                    pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                    uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                }
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 8 ARM'] = {
+        stage('Oracle Linux 8 ARM') {
+            if (!shouldRunStage('Oracle Linux 8 ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                    buildStage("oraclelinux:8", "--build_rpm=1")
+
+                    pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                    uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                }
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 9'] = {
+        stage('Oracle Linux 9') {
+            if (!shouldRunStage('Oracle Linux 9')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("oraclelinux:9", "--build_rpm=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("oraclelinux:9", "--build_rpm=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 9 ARM'] = {
+        stage('Oracle Linux 9 ARM') {
+            if (!shouldRunStage('Oracle Linux 9 ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("oraclelinux:9", "--build_rpm=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("oraclelinux:9", "--build_rpm=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 10'] = {
+        stage('Oracle Linux 10') {
+            if (!shouldRunStage('Oracle Linux 10')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("oraclelinux:10", "--build_rpm=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("oraclelinux:10", "--build_rpm=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 10 ARM'] = {
+        stage('Oracle Linux 10 ARM') {
+            if (!shouldRunStage('Oracle Linux 10 ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("oraclelinux:10", "--build_rpm=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("oraclelinux:10", "--build_rpm=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Amazon Linux 2023'] = {
+        stage('Amazon Linux 2023') {
+            if (!shouldRunStage('Amazon Linux 2023')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                buildStage("amazonlinux:2023", "--build_rpm=1")
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Amazon Linux 2023 ARM'] = {
+        stage('Amazon Linux 2023 ARM') {
+            if (!shouldRunStage('Amazon Linux 2023 ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
+                buildStage("amazonlinux:2023", "--build_rpm=1")
+
+                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
+                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Jammy(22.04)'] = {
+        stage('Ubuntu Jammy(22.04)') {
+            if (!shouldRunStage('Ubuntu Jammy(22.04)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:jammy", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:jammy", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Jammy(22.04) ARM'] = {
+        stage('Ubuntu Jammy(22.04) ARM') {
+            if (!shouldRunStage('Ubuntu Jammy(22.04) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:jammy", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:jammy", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Noble(24.04)'] = {
+        stage('Ubuntu Noble(24.04)') {
+            if (!shouldRunStage('Ubuntu Noble(24.04)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:noble", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:noble", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Noble(24.04) ARM'] = {
+        stage('Ubuntu Noble(24.04) ARM') {
+            if (!shouldRunStage('Ubuntu Noble(24.04) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:noble", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:noble", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Resolute(26.04)'] = {
+        stage('Ubuntu Resolute(26.04)') {
+            if (!shouldRunStage('Ubuntu Resolute(26.04)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:resolute", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:resolute", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Resolute(26.04) ARM'] = {
+        stage('Ubuntu Resolute(26.04) ARM') {
+            if (!shouldRunStage('Ubuntu Resolute(26.04) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:resolute", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:resolute", "--build_deb=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Debian Bullseye(11)'] = {
+        stage('Debian Bullseye(11)') {
+            if (!shouldRunStage('Debian Bullseye(11)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                    buildStage("debian:bullseye", "--build_deb=1")
+
+                    pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                    uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+                }
+            }
+        }
+    }
+
+    stagesMap['Debian Bullseye(11) ARM'] = {
+        stage('Debian Bullseye(11) ARM') {
+            if (!shouldRunStage('Debian Bullseye(11) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                    buildStage("debian:bullseye", "--build_deb=1")
+
+                    pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                    uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+                }
+            }
+        }
+    }
+
+    stagesMap['Debian Bookworm(12)'] = {
+        stage('Debian Bookworm(12)') {
+            if (!shouldRunStage('Debian Bookworm(12)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("debian:bookworm", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("debian:bookworm", "--build_deb=1")
+                }
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Debian Bookworm(12) ARM'] = {
+        stage('Debian Bookworm(12) ARM') {
+            if (!shouldRunStage('Debian Bookworm(12) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("debian:bookworm", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("debian:bookworm", "--build_deb=1")
+                }
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Debian Trixie(13)'] = {
+        stage('Debian Trixie(13)') {
+            if (!shouldRunStage('Debian Trixie(13)')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("debian:trixie", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("debian:trixie", "--build_deb=1")
+                }
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Debian Trixie(13) ARM'] = {
+        stage('Debian Trixie(13) ARM') {
+            if (!shouldRunStage('Debian Trixie(13) ARM')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("debian:trixie", "--build_deb=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("debian:trixie", "--build_deb=1")
+                }
+                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
+                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 8 tarball'] = {
+        stage('Oracle Linux 8 tarball') {
+            if (!shouldRunStage('Oracle Linux 8 tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                    buildStage("oraclelinux:8", "--build_tarball=1")
+
+                    pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                    uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+                }
+            }
+        }
+    }
+
+    stagesMap['Oracle Linux 9 tarball'] = {
+        stage('Oracle Linux 9 tarball') {
+            if (!shouldRunStage('Oracle Linux 9 tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("oraclelinux:9", "--build_tarball=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("oraclelinux:9", "--build_tarball=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Focal(20.04) tarball'] = {
+        stage('Ubuntu Focal(20.04) tarball') {
+            if (!shouldRunStage('Ubuntu Focal(20.04) tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                    buildStage("ubuntu:focal", "--build_tarball=1")
+
+                    pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                    uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+                }
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Jammy(22.04) tarball'] = {
+        stage('Ubuntu Jammy(22.04) tarball') {
+            if (!shouldRunStage('Ubuntu Jammy(22.04) tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:jammy", "--build_tarball=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:jammy", "--build_tarball=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+            }
+        }
+    }
+
+    stagesMap['Ubuntu Noble(24.04) tarball'] = {
+        stage('Ubuntu Noble(24.04) tarball') {
+            if (!shouldRunStage('Ubuntu Noble(24.04) tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("ubuntu:noble", "--build_tarball=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("ubuntu:noble", "--build_tarball=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+            }
+        }
+    }
+
+    stagesMap['Debian Bullseye(11) tarball'] = {
+        stage('Debian Bullseye(11) tarball') {
+            if (!shouldRunStage('Debian Bullseye(11) tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                if (env.FIPSMODE == 'YES') {
+                    echo "The step is skipped"
+                } else {
+                    cleanUpWS()
+                    popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                    buildStage("debian:bullseye", "--build_tarball=1")
+
+                    pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                    uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+                }
+            }
+        }
+    }
+
+    stagesMap['Debian Bookworm(12) tarball'] = {
+        stage('Debian Bookworm(12) tarball') {
+            if (!shouldRunStage('Debian Bookworm(12) tarball')) {
+                echo 'Skipped: not in BUILD_STAGES filter'
+                return
+            }
+            node(params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb') {
+                cleanUpWS()
+                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
+                if (env.FIPSMODE == 'YES') {
+                    buildStage("debian:bookworm", "--build_tarball=1 --enable_fipsmode=1")
+                } else {
+                    buildStage("debian:bookworm", "--build_tarball=1")
+                }
+
+                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
+                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
+            }
+        }
+    }
+
+    return stagesMap
+}
+
 void cleanUpWS() {
     sh """
         sudo rm -rf ./*
@@ -297,615 +861,9 @@ pipeline {
         }
 
         stage('Build PXB RPMs/DEBs/Binary tarballs') {
-            parallel {
-                stage('Oracle Linux 8') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 8') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                                buildStage("oraclelinux:8", "--build_rpm=1")
-
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            }
-                        }
-                    }
-                }
-                stage('Oracle Linux 8 ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 8 ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                                buildStage("oraclelinux:8", "--build_rpm=1")
-
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            }
-                        }
-                    }
-                }
-                stage('Oracle Linux 9') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 9') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("oraclelinux:9", "--build_rpm=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("oraclelinux:9", "--build_rpm=1")
-                            }
-            
-                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                } 
-                stage('Oracle Linux 9 ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 9 ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("oraclelinux:9", "--build_rpm=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("oraclelinux:9", "--build_rpm=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Oracle Linux 10') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 10') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("oraclelinux:10", "--build_rpm=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("oraclelinux:10", "--build_rpm=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Oracle Linux 10 ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 10 ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("oraclelinux:10", "--build_rpm=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("oraclelinux:10", "--build_rpm=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                            uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Amazon Linux 2023') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Amazon Linux 2023') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                                buildStage("amazonlinux:2023", "--build_rpm=1")
-
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Amazon Linux 2023 ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Amazon Linux 2023 ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "srpm/", AWS_STASH_PATH)
-                                buildStage("amazonlinux:2023", "--build_rpm=1")
-
-                                pushArtifactFolder(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                                uploadRPMfromAWS(params.CLOUD, "rpm/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Jammy(22.04)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Jammy(22.04)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:jammy", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:jammy", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Jammy(22.04) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Jammy(22.04) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:jammy", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:jammy", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Noble(24.04)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Noble(24.04)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:noble", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:noble", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Noble(24.04) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Noble(24.04) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-64gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:noble", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:noble", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Resolute(26.04)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Resolute(26.04)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:resolute", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:resolute", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Ubuntu Resolute(26.04) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Resolute(26.04) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:resolute", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:resolute", "--build_deb=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Debian Bullseye(11)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bullseye(11)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                                buildStage("debian:bullseye", "--build_deb=1")
-
-                                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            }
-                        }
-                    }
-                }
-                stage('Debian Bullseye(11) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bullseye(11) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                                buildStage("debian:bullseye", "--build_deb=1")
-
-                                pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                                uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            }
-                        }
-                    }
-                }
-                stage('Debian Bookworm(12)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bookworm(12)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("debian:bookworm", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("debian:bookworm", "--build_deb=1")
-                            }
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Debian Bookworm(12) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bookworm(12) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("debian:bookworm", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("debian:bookworm", "--build_deb=1")
-                            }
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Debian Trixie(13)') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Trixie(13)') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("debian:trixie", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("debian:trixie", "--build_deb=1")
-                            }
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Debian Trixie(13) ARM') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Trixie(13) ARM') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-aarch64' : 'docker-32gb-aarch64'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_deb/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("debian:trixie", "--build_deb=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("debian:trixie", "--build_deb=1")
-                            }
-                            pushArtifactFolder(params.CLOUD, "deb/", AWS_STASH_PATH)
-                            uploadDEBfromAWS(params.CLOUD, "deb/", AWS_STASH_PATH)
-                        }
-                    }
-                }
-                stage('Oracle Linux 8 tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 8 tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                                buildStage("oraclelinux:8", "--build_tarball=1")
-
-                                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                            }
-                        }
-                    }
-                }
-                stage('Oracle Linux 9 tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Oracle Linux 9 tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("oraclelinux:9", "--build_tarball=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("oraclelinux:9", "--build_tarball=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                            uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                        }
-                    }
-                }
-                stage('Ubuntu Focal(20.04) tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Focal(20.04) tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                                buildStage("ubuntu:focal", "--build_tarball=1")
-
-                                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                            }
-                        }
-                    }
-                }
-                stage('Ubuntu Jammy(22.04) tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Jammy(22.04) tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:jammy", "--build_tarball=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:jammy", "--build_tarball=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                            uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                        }
-                    }
-                }
-                stage('Ubuntu Noble(24.04) tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Ubuntu Noble(24.04) tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("ubuntu:noble", "--build_tarball=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("ubuntu:noble", "--build_tarball=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                            uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                        }
-                    }
-                }
-                stage('Debian Bullseye(11) tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bullseye(11) tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            if (env.FIPSMODE == 'YES') {
-                                echo "The step is skipped"
-                            } else {
-                                cleanUpWS()
-                                popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                                buildStage("debian:bullseye", "--build_tarball=1")
-
-                                pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                                uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                            }
-                        }
-                    }
-                }
-                stage('Debian Bookworm(12) tarball') {
-                    when {
-                        beforeAgent true
-                        expression { shouldRunStage('Debian Bookworm(12) tarball') }
-                    }
-                    agent {
-                        label params.CLOUD == 'Hetzner' ? 'docker-x64' : 'docker-32gb'
-                    }
-                    steps {
-                        script {
-                            cleanUpWS()
-                            popArtifactFolder(params.CLOUD, "source_tarball/", AWS_STASH_PATH)
-                            if (env.FIPSMODE == 'YES') {
-                                buildStage("debian:bookworm", "--build_tarball=1 --enable_fipsmode=1")
-                            } else {
-                                buildStage("debian:bookworm", "--build_tarball=1")
-                            }
-
-                            pushArtifactFolder(params.CLOUD, "test/tarball/", AWS_STASH_PATH)
-                            uploadTarballfromAWS(params.CLOUD, "test/tarball/", AWS_STASH_PATH, 'binary')
-                        }
-                    }
+            steps {
+                script {
+                    parallel buildPxbPackagesStages(AWS_STASH_PATH)
                 }
             }
         }
